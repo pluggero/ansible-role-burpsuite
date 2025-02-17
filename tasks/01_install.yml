@@ -1,0 +1,31 @@
+---
+- name: Install burpsuite
+  block:
+    - name: Validate burpsuite variables
+      ansible.builtin.include_tasks: noauto_validate_vars.yml
+
+    - name: Include OS-specific variables
+      ansible.builtin.include_vars: "{{ var_file }}"
+      with_first_found:
+        - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}.yml"
+        - "{{ ansible_lsb.id }}.yml"
+      loop_control:
+        loop_var: var_file
+
+    - name: Include OS-specific dependencies
+      ansible.builtin.include_tasks: "{{ task_file }}"
+      with_first_found:
+        - "noauto_install_dep_{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "noauto_install_dep_{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+        - "noauto_install_dep_{{ ansible_distribution }}.yml"
+        - "noauto_install_dep_{{ ansible_os_family }}.yml"
+        - "noauto_install_dep_{{ ansible_lsb.id }}.yml"
+      loop_control:
+        loop_var: task_file
+
+    - name: Install burpsuite
+      ansible.builtin.include_tasks:
+        file: noauto_install_{{ burpsuite_install_method }}.yml

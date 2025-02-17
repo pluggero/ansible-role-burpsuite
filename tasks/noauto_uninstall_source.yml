@@ -1,0 +1,42 @@
+---
+- name: Uninstall burpsuite from source
+  block:
+    - name: Find existing burpsuite folder in {{ burpsuite_install_dir }}
+      ansible.builtin.find:
+        paths: "{{ burpsuite_install_dir }}"
+        patterns: "burpsuite-{{ burpsuite_edition }}*"
+        file_type: directory
+      register: burpsuite_install_folder
+
+    - name: Remove existing burpsuite installation folder
+      ansible.builtin.file:
+        path: "{{ folder.path }}"
+        state: absent
+      loop: "{{ burpsuite_install_folder.files }}"
+      loop_control:
+        loop_var: folder
+      become: true
+
+    - name: Remove burpsuite symlink
+      ansible.builtin.file:
+        path: "/usr/local/bin/BurpSuite{{ 'Pro' if burpsuite_edition == 'pro' else 'Community' }}"
+        state: absent
+      become: true
+
+    - name: Remove burpsuite desktop file symlink
+      block:
+        - name: Find desktop files matching burpsuite edition
+          ansible.builtin.find:
+            paths: /usr/local/share/applications
+            patterns: "install4j_*-BurpSuite{{ 'Pro' if burpsuite_edition == 'pro' else 'Community' }}.desktop"
+            file_type: file
+          register: burpsuite_desktop_files
+
+        - name: Remove desktop files
+          ansible.builtin.file:
+            path: "{{ file.path}}"
+            state: absent
+          loop: "{{ burpsuite_desktop_files.files }}"
+          loop_control:
+            loop_var: file
+          become: true

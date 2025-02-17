@@ -1,0 +1,19 @@
+---
+- name: Ensure we are using pacman
+  ansible.builtin.fail:
+    msg: "This role only supports {{ ansible_os_family }} systems that use pacman as a package manager."
+  when: ansible_pkg_mgr != "pacman"
+
+- name: Install burpsuite dependencies via pacman
+  when: ansible_pkg_mgr == "pacman"
+  block:
+    - name: Update pacman cache
+      community.general.pacman:
+        update_cache: true
+      become: true
+
+    - name: Ensure burpsuite dependencies are installed
+      community.general.pacman:
+        name: "{{ burpsuite_dep_pkgs }}"
+        state: present
+      become: true

@@ -1,0 +1,27 @@
+---
+- name: Assert that burpsuite_edition is valid
+  ansible.builtin.assert:
+    that:
+      - burpsuite_edition in ['community', 'pro']
+    fail_msg: >-
+      The value of "burpsuite_edition" ({{ burpsuite_edition }}) is invalid.
+      Must be one of: [community, pro].
+    success_msg: "The value of 'burpsuite_edition' is valid."
+
+- name: Assert that burpsuite_release_channel is valid
+  ansible.builtin.assert:
+    that:
+      - burpsuite_release_channel in ['Stable', 'Early Adopter']
+    fail_msg: >-
+      The value of "burpsuite_release_channel" ({{ burpsuite_release_channel }}) is invalid.
+      Must be one of: [Stable, Early Adopter].
+    success_msg: "The value of 'burpsuite_release_channel' is valid."
+
+- name: Assert that burpsuite_install_method is valid
+  ansible.builtin.assert:
+    that:
+      - burpsuite_install_method == 'source'
+    fail_msg: >-
+      The value of "burpsuite_install_method" ({{ burpsuite_install_method }}) is invalid.
+      Must be: [source].
+    success_msg: "The value of 'burpsuite_install_method' is valid."

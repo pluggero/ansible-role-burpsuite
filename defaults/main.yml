@@ -1,0 +1,38 @@
+---
+burpsuite_config_dir: "{{ ansible_env.HOME }}/.BurpSuite"
+
+burpsuite_version: "2025.1.1"
+burpsuite_edition: "community"
+burpsuite_release_channel: "Stable"
+burpsuite_install_method: "source"
+burpsuite_force_install: false
+
+burpsuite_download_url: "https://portswigger.net/burp/releases/download?product={{ burpsuite_edition }}&type=linux&version={{ burpsuite_version }}"
+burpsuite_download_dir: "/tmp"
+
+burpsuite_install_dir: "/opt"
+burpsuite_install_path: "{{ burpsuite_install_dir }}/burpsuite-{{ burpsuite_edition }}-{{ burpsuite_version }}"
+
+burpsuite_extensions_dir: "{{ burpsuite_install_path }}/extensions"
+
+burpsuite_extensions_jython_version: "2.7.4"
+burpsuite_extensions_jython_jar: "jython-standalone.jar"
+burpsuite_extensions_jython_url: "https://repo1.maven.org/maven2/org/python/jython-standalone/{{ burpsuite_extensions_jython_version }}/jython-standalone-{{ burpsuite_extensions_jython_version }}.jar"
+burpsuite_extensions_jython_checksum_url: "{{ burpsuite_extensions_jython_url }}.sha256"
+
+burpsuite_extensions_jruby_version: "9.4.9.0"
+burpsuite_extensions_jruby_jar: "jruby-complete.jar"
+burpsuite_extensions_jruby_url: "https://repo1.maven.org/maven2/org/jruby/jruby-complete/{{ burpsuite_extensions_jruby_version }}/jruby-complete-{{ burpsuite_extensions_jruby_version }}.jar"
+burpsuite_extensions_jruby_checksum_url: "{{ burpsuite_extensions_jruby_url }}.sha256"
+
+burpsuite_extensions:
+  jython:
+    version: "{{ burpsuite_extensions_jython_version }}"
+    jar: "{{ burpsuite_extensions_jython_jar }}"
+    download_url: "{{ burpsuite_extensions_jython_url }}"
+    download_checksum: "sha256:{{ burpsuite_extensions_jython_checksum_url }}"
+  jruby:
+    version: "{{ burpsuite_extensions_jruby_version }}"
+    jar: "{{ burpsuite_extensions_jruby_jar }}"
+    download_url: "{{ burpsuite_extensions_jruby_url }}"
+    download_checksum: "sha256:{{ burpsuite_extensions_jruby_checksum_url }}"

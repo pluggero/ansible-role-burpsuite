@@ -1,0 +1,93 @@
+---
+- name: Install burpsuite from source
+  block:
+    - name: Import installed burpsuite version check
+      ansible.builtin.include_tasks: noauto_check_installed_version.yml
+      when: burpsuite_installed_version is not defined
+
+    - name: Force install if the version numbers do not match
+      ansible.builtin.set_fact:
+        burpsuite_force_install: true
+      when:
+        - burpsuite_installed_version is defined
+        - burpsuite_installed_version != burpsuite_version
+
+    - name: Install burpsuite from source
+      when: burpsuite_installed_version is not defined or burpsuite_force_install
+      block:
+        - name: Uninstall current burpsuite installation
+          ansible.builtin.include_tasks: noauto_uninstall_source.yml
+
+        - name: Retrieve burpsuite installer checksum
+          block:
+            - name: Retrieve data from PortSwigger releases API
+              ansible.builtin.set_fact:
+                burpsuite_releases: "{{ lookup('url', 'https://portswigger.net/burp/releases/data?lastId=-1&pageSize=20') }}"
+
+            - name: Get release data
+              ansible.builtin.set_fact:
+                burpsuite_release_data: >-
+                  {{
+                    burpsuite_releases.ResultSet.Results
+                    | selectattr('releaseChannels', 'contains', burpsuite_release_channel)
+                    | map(attribute='builds')
+                    | flatten
+                    | selectattr('ProductId', 'equalto', burpsuite_edition)
+                    | selectattr('ProductPlatform', 'equalto', 'Linux')
+                    | list
+                    | first
+                  }}
+
+            - name: Set release facts
+              ansible.builtin.set_fact:
+                burpsuite_download_checksum: "{{ burpsuite_release_data.Sha256Checksum }}"
+
+        - name: Set installer script filename
+          ansible.builtin.set_fact:
+            burpsuite_installer_script: "burpsuite_{{ burpsuite_edition }}_linux_v{{ burpsuite_version | regex_replace('\\.', '_') }}.sh"
+
+        - name: Download burpsuite package
+          ansible.builtin.get_url:
+            url: "{{ burpsuite_download_url }}"
+            dest: "{{ burpsuite_download_dir }}/{{ burpsuite_installer_script }}"
+            checksum: "sha256:{{ burpsuite_download_checksum }}"
+            mode: "0755"
+            owner: root
+            group: root
+          become: true
+
+        - name: Ensure burpsuite installation folder exists
+          ansible.builtin.file:
+            path: "{{ burpsuite_install_path }}"
+            state: directory
+            mode: "0755"
+            owner: root
+            group: root
+          become: true
+
+        - name: Create response.varfile for unattended install
+          ansible.builtin.template:
+            src: burpsuite_response.varfile.j2
+            dest: "{{ burpsuite_download_dir }}/burpsuite_response.varfile"
+            owner: root
+            group: root
+            mode: "0640"
+          become: true
+
+        - name: Install Burp Suite
+          ansible.builtin.command:
+            cmd: "/bin/sh {{ burpsuite_installer_script }} -q -varfile burpsuite_response.varfile -overwrite"
+            chdir: "{{ burpsuite_download_dir }}"
+          changed_when: true
+          become: true
+
+        - name: Clean up files
+          ansible.builtin.file:
+            path: "{{ file }}"
+            state: absent
+          loop:
+            - "{{ burpsuite_download_dir }}/{{ burpsuite_installer_script }}"
+            - "{{ burpsuite_download_dir }}/burpsuite_response.varfile"
+          loop_control:
+            loop_var: file
+          become: true

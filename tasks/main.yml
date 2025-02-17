@@ -1,0 +1,9 @@
+---
+- name: Add and run all plays
+  ansible.builtin.include_tasks: "{{ task_element }}"
+  with_items: "{{ lookup('ansible.builtin.fileglob', 'tasks/*.yml').split(',')
+    | reject('search', 'main.yml')
+    | reject('search', 'noauto_*')
+    | sort }}"
+  loop_control:
+    loop_var: task_element
