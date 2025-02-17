@@ -1,2 +1,4 @@
 ---
-burpsuite_dep_pkgs: []
+burpsuite_dep_pkgs:
+  - libfontconfig1
+  - libfreetype6
