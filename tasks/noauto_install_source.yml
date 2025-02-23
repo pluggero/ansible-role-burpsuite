@@ -33,6 +33,7 @@
                     | map(attribute='builds')
                     | flatten
                     | selectattr('ProductId', 'equalto', burpsuite_edition)
+                    | selectattr('Version', 'equalto', burpsuite_version)
                     | selectattr('ProductPlatform', 'equalto', 'Linux')
                     | list
                     | first
