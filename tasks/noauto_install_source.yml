@@ -92,3 +92,25 @@
           loop_control:
             loop_var: file
           become: true
+
+        - name: Create desktop file
+          block:
+            - name: Ensure desktop file directory exists
+              ansible.builtin.file:
+                path: "/usr/local/share/applications"
+                state: directory
+                mode: "0755"
+                owner: root
+                group: root
+              become: true
+
+            - name: Create desktop file symlink
+              ansible.builtin.file:
+                src: "{{ burpsuite_install_path }}/Burp Suite {{ 'Pro' if burpsuite_edition == 'pro' else 'Community' }} Edition.desktop"
+                dest: "/usr/local/share/applications/burpsuite-{{ burpsuite_edition}}.desktop"
+                state: link
+                force: true
+                mode: "0644"
+                owner: root
+                group: root
+              become: true
