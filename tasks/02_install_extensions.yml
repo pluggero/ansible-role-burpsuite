@@ -15,7 +15,7 @@
     checksum: "{{ extension.value.download_checksum }}"
     owner: root
     group: root
-    mode: 0640
+    mode: 0644
   loop: "{{ lookup('dict', burpsuite_extensions) }}"
   loop_control:
     loop_var: extension
