@@ -25,6 +25,6 @@
 
     - name: Remove burpsuite desktop file symlink
       ansible.builtin.file:
-        path: "/usr/local/share/applications/burpsuite-{{ burpsuite_edition}}.desktop"
+        path: "/usr/local/share/applications/burpsuite-{{ burpsuite_edition }}.desktop"
         state: absent
       become: true
