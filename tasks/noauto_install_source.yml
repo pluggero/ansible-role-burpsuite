@@ -106,7 +106,7 @@
 
             - name: Create desktop file symlink
               ansible.builtin.file:
-                src: "{{ burpsuite_install_path }}/Burp Suite {{ 'Pro' if burpsuite_edition == 'pro' else 'Community' }} Edition.desktop"
+                src: "{{ burpsuite_install_path }}/Burp Suite {{ 'Professional' if burpsuite_edition == 'pro' else 'Community Edition' }}.desktop"
                 dest: "/usr/local/share/applications/burpsuite-{{ burpsuite_edition }}.desktop"
                 state: link
                 force: true
