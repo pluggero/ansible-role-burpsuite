@@ -20,7 +20,7 @@ burpsuite_extensions_jython_jar: "jython-standalone.jar"
 burpsuite_extensions_jython_url: "https://repo1.maven.org/maven2/org/python/jython-standalone/{{ burpsuite_extensions_jython_version }}/jython-standalone-{{ burpsuite_extensions_jython_version }}.jar"
 burpsuite_extensions_jython_checksum_url: "{{ burpsuite_extensions_jython_url }}.sha256"
 
-burpsuite_extensions_jruby_version: "9.4.9.0"
+burpsuite_extensions_jruby_version: "9.4.12.0"
 burpsuite_extensions_jruby_jar: "jruby-complete.jar"
 burpsuite_extensions_jruby_url: "https://repo1.maven.org/maven2/org/jruby/jruby-complete/{{ burpsuite_extensions_jruby_version }}/jruby-complete-{{ burpsuite_extensions_jruby_version }}.jar"
 burpsuite_extensions_jruby_checksum_url: "{{ burpsuite_extensions_jruby_url }}.sha256"
