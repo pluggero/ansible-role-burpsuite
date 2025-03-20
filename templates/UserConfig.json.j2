@@ -50,17 +50,18 @@
 {% for extension in extensions %}
               {
                 "name":"{{ extension.name }}",
-                "errors":"ui",
 {% if extension.bapp_serial_version is defined %}
                 "bapp_serial_version":{{ extension.bapp_serial_version }},
                 "bapp_uuid":"{{ extension.bapp_uuid }}",
-                "extension_file":"{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/{{ extension.entry_point }}",
+                "extension_file":"bapps/{{ extension.bapp_uuid }}/{{ extension.entry_point }}",
+                "extension_type":"{{ extension.type }}",
 {% else %}
                 "extension_file":"{{ burpsuite_extensions_dir }}/{{ extension.name }}.jar",
-{% endif %}
                 "extension_type":"java",
+{% endif %}
                 "loaded":{{ extension.loaded | lower }},
-                "output":"ui"
+                "output":"ui",
+                "errors":"ui"
               }{% if not loop.last %},{% endif %}
 
 {% endfor %}

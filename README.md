@@ -37,6 +37,7 @@ burpsuite_extensions_bapp:
   - name: "ParamMiner"
     bapp_uuid: "17d2949a985c4b7ca092728dba871943"
     bapp_serial_version: "33"
+    type: "java"
     loaded: true
 
 burpsuite_extensions_external:

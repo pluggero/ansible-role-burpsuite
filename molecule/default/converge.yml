@@ -8,12 +8,13 @@
       - name: "ParamMiner"
         bapp_uuid: "17d2949a985c4b7ca092728dba871943"
         bapp_serial_version: "33"
+        type: "java"
         loaded: true
       - name: "Content Type Converter"
         bapp_uuid: "db57ecbe2cb7446292a94aa6181c9278"
         bapp_serial_version: "4"
+        type: "java"
         loaded: true
-
     burpsuite_extensions_external:
       - name: "CSTC"
         download_url: "https://github.com/usdAG/cstc/releases/download/v1.3.4/CSTC-1.3.4-jar-with-dependencies.jar"

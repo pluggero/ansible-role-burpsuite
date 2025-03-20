@@ -58,6 +58,7 @@
     - name: Import installed burpsuite bapp extension version check
       ansible.builtin.include_tasks: noauto_check_installed_bapp_extention_version.yml
 
+    # The processing is required to inject the entry_point variable
     - name: Process the burpsuite bapp extension
       ansible.builtin.set_fact:
         burpsuite_processed_bapp_extensions: >-
@@ -65,6 +66,7 @@
             'name': extension.name,
             'bapp_uuid': extension.bapp_uuid,
             'bapp_serial_version': extension.bapp_serial_version,
+            'type': extension.type,
             'loaded': extension.loaded,
             'entry_point': burpsuite_bapp_extension_entry_point
           }] }}
