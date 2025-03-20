@@ -2,3 +2,4 @@
 burpsuite_dep_pkgs:
   - libfontconfig1
   - libfreetype6
+  - unzip

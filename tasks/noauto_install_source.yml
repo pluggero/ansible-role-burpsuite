@@ -75,7 +75,7 @@
             mode: "0640"
           become: true
 
-        - name: Install Burp Suite
+        - name: Install burpsuite
           ansible.builtin.command:
             cmd: "/bin/sh {{ burpsuite_installer_script }} -q -varfile burpsuite_response.varfile -overwrite"
             chdir: "{{ burpsuite_download_dir }}"

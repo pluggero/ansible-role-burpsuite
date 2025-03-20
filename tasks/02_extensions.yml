@@ -1,0 +1,56 @@
+---
+- name: Ensure burpsuite extension runtimes and extensions are installed
+  block:
+    - name: Create burpsuite extensions directory
+      ansible.builtin.file:
+        path: "{{ burpsuite_extensions_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0777"
+      become: true
+
+    - name: Create burpsuite extension runtimes directory
+      ansible.builtin.file:
+        path: "{{ burpsuite_extension_runtimes_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      become: true
+
+    - name: Download extension runtime jar files
+      ansible.builtin.get_url:
+        url: "{{ extension.value.download_url }}"
+        dest: "{{ burpsuite_extension_runtimes_dir }}/{{ extension.value.jar }}"
+        checksum: "{{ extension.value.download_checksum }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ lookup('dict', burpsuite_extension_runtimes) }}"
+      loop_control:
+        loop_var: extension
+      become: true
+
+    - name: Initialize burpsuite_processed_extensions
+      ansible.builtin.set_fact:
+        burpsuite_processed_extensions: []
+
+    - name: Ensure burpsuite bapp extensions are installed
+      ansible.builtin.include_tasks:
+        file: noauto_install_burpsuite_bapp_extension.yml
+      loop: "{{ burpsuite_extensions_bapp }}"
+      loop_control:
+        loop_var: extension
+
+    - name: Ensure external extensions are installed
+      ansible.builtin.get_url:
+        url: "{{ extension.download_url }}"
+        dest: "{{ burpsuite_extensions_dir }}/{{ extension.name }}.jar"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ burpsuite_extensions_external }}"
+      loop_control:
+        loop_var: extension
+      become: true

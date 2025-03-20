@@ -1,0 +1,38 @@
+---
+- name: Check if burpsuite bapp extension folder exists
+  ansible.builtin.stat:
+    path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+  register: burpsuite_bapp_extension_folder
+
+- name: Initialize installed burpsuite bapp extension version
+  ansible.builtin.set_fact:
+    burpsuite_bapp_extension_installed_serial_version: ""
+
+- name: Gather information from Manifest
+  when: burpsuite_bapp_extension_folder.stat.exists
+  block:
+    - name: Read manifest file
+      ansible.builtin.slurp:
+        src: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/BappManifest.bmf"
+      register: burpsuite_bapp_manifest_file
+      become: true
+
+    - name: Convert file content to string
+      ansible.builtin.set_fact:
+        burpsuite_bapp_manifest_file_content: "{{ burpsuite_bapp_manifest_file.content | b64decode }}"
+
+    - name: Extract SerialVersion
+      ansible.builtin.set_fact:
+        burpsuite_bapp_extension_installed_serial_version: "{{ (burpsuite_bapp_manifest_file_content | regex_search('SerialVersion: (\\d+)', '\\1')) | first }}"
+
+    - name: Debug installed burpsuite bapp extension version
+      ansible.builtin.debug:
+        var: burpsuite_bapp_extension_installed_serial_version
+
+    - name: Extract EntryPoint
+      ansible.builtin.set_fact:
+        burpsuite_bapp_extension_entry_point: "{{ (burpsuite_bapp_manifest_file_content | regex_search('EntryPoint: (.+)', '\\1')) | first }}"
+
+    - name: Debug EntryPoint
+      ansible.builtin.debug:
+        var: burpsuite_bapp_extension_entry_point

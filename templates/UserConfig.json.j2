@@ -45,16 +45,35 @@
             }
         },
         "extender":{
-            "extensions":[],
+            "extensions":[
+{% set extensions = burpsuite_extensions_external + burpsuite_processed_bapp_extensions %}
+{% for extension in extensions %}
+              {
+                "name":"{{ extension.name }}",
+                "errors":"ui",
+{% if extension.bapp_serial_version is defined %}
+                "bapp_serial_version":{{ extension.bapp_serial_version }},
+                "bapp_uuid":"{{ extension.bapp_uuid }}",
+                "extension_file":"{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/{{ extension.entry_point }}",
+{% else %}
+                "extension_file":"{{ burpsuite_extensions_dir }}/{{ extension.name }}.jar",
+{% endif %}
+                "extension_type":"java",
+                "loaded":{{ extension.loaded | lower }},
+                "output":"ui"
+              }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+            ],
             "java":{
                 "folder_for_loading_library_jar_files":""
             },
             "python":{
                 "folder_for_loading_modules":"",
-                "location_of_jython_standalone_jar_file":"{% if 'jython' in burpsuite_extensions %}{{ burpsuite_extensions_dir }}/{{ burpsuite_extensions.jython.jar }}{% endif %}"
+                "location_of_jython_standalone_jar_file":"{% if 'jython' in burpsuite_extension_runtimes %}{{ burpsuite_extension_runtimes_dir }}/{{ burpsuite_extension_runtimes.jython.jar }}{% endif %}"
             },
             "ruby":{
-                "location_of_jruby_jar_file":"{% if 'jruby' in burpsuite_extensions %}{{ burpsuite_extensions_dir }}/{{ burpsuite_extensions.jruby.jar }}{% endif %}"
+                "location_of_jruby_jar_file":"{% if 'jruby' in burpsuite_extension_runtimes %}{{ burpsuite_extension_runtimes_dir }}/{{ burpsuite_extension_runtimes.jruby.jar }}{% endif %}"
             },
             "settings":{
                 "automatically_reload_extensions_on_startup":true,

@@ -1,0 +1,70 @@
+---
+- name: Installing burpsuite bapp extension
+  block:
+    - name: Import installed burpsuite bapp extension version check
+      ansible.builtin.include_tasks: noauto_check_installed_bapp_extention_version.yml
+
+    - name: Force install if the serial version numbers do not match
+      ansible.builtin.set_fact:
+        burpsuite_bapp_extensions_force_install: true
+      when:
+        - burpsuite_bapp_extension_installed_serial_version is defined
+        - burpsuite_bapp_extension_installed_serial_version != extension.bapp_serial_version
+
+    - name: Install burpsuite bapp extension
+      when: burpsuite_bapp_extension_installed_serial_version is not defined or burpsuite_bapp_extensions_force_install
+      block:
+        - name: Download bapp extension bapp file
+          ansible.builtin.get_url:
+            url: "https://portswigger-cdn.net/bappstore/bapps/download/{{ extension.bapp_uuid }}/{{ extension.bapp_serial_version }}"
+            dest: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+            owner: root
+            group: root
+            mode: "0644"
+          become: true
+
+        - name: Ensure burpsuite extension directory exists
+          ansible.builtin.file:
+            path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+            state: directory
+            owner: root
+            group: root
+            mode: "0766"
+          become: true
+
+        - name: Extract files from bapp archive
+          ansible.builtin.unarchive:
+            src: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+            dest: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+            remote_src: true
+          become: true
+
+        - name: Set permissions for extracted bapp files
+          ansible.builtin.file:
+            path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+            state: directory
+            recurse: true
+            owner: root
+            group: root
+            mode: "0665"
+          become: true
+
+        - name: Cleanup downloaded bapp file
+          ansible.builtin.file:
+            path: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+            state: absent
+          become: true
+
+    - name: Import installed burpsuite bapp extension version check
+      ansible.builtin.include_tasks: noauto_check_installed_bapp_extention_version.yml
+
+    - name: Process the burpsuite bapp extension
+      ansible.builtin.set_fact:
+        burpsuite_processed_bapp_extensions: >-
+          {{ (burpsuite_processed_bapp_extensions | default([])) + [ {
+            'name': extension.name,
+            'bapp_uuid': extension.bapp_uuid,
+            'bapp_serial_version': extension.bapp_serial_version,
+            'loaded': extension.loaded,
+            'entry_point': burpsuite_bapp_extension_entry_point
+          }] }}

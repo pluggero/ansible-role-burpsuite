@@ -13,6 +13,6 @@
       ansible.builtin.template:
         src: "{{ role_path }}/templates/UserConfig.json.j2"
         dest: "{{ burpsuite_config_dir }}/UserConfig{{ burpsuite_edition | capitalize }}.json"
-        mode: 0700
+        mode: "0700"
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
