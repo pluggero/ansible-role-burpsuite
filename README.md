@@ -38,6 +38,7 @@ burpsuite_extensions_bapp:
     bapp_uuid: "17d2949a985c4b7ca092728dba871943"
     bapp_serial_version: "33"
     type: "java"
+    use_ai: false
     loaded: true
 
 burpsuite_extensions_external:

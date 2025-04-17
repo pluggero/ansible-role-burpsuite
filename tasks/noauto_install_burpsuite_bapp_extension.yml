@@ -67,6 +67,7 @@
             'bapp_uuid': extension.bapp_uuid,
             'bapp_serial_version': extension.bapp_serial_version,
             'type': extension.type,
+            'use_ai': extension.use_ai,
             'loaded': extension.loaded,
             'entry_point': burpsuite_bapp_extension_entry_point
           }] }}
