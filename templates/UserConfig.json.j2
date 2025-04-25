@@ -58,7 +58,7 @@
                 "bapp_uuid":"{{ extension.bapp_uuid }}",
                 "extension_file":"bapps/{{ extension.bapp_uuid }}/{{ extension.entry_point }}",
                 "extension_type":"{{ extension.type }}",
-                "use_ai":{{ extension.use_ai | lower }}
+                "use_ai":{{ extension.use_ai | lower }},
 {% else %}
                 "extension_file":"{{ burpsuite_extensions_dir }}/{{ extension.name }}.jar",
                 "extension_type":"java",
