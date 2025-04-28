@@ -35,7 +35,7 @@ jobs:
           yamllint .
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@4ce8e497d462cf73b4d4fac1e97b4ace4f317dcc # v24.12.2
+        uses: ansible/ansible-lint@c16f018b1bdfdea6717f4b5b1b141a78b86021cd # v25.2.1
         with:
           working_directory: "pluggero.burpsuite"
 
