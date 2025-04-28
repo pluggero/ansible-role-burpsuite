@@ -36,8 +36,7 @@
       "defaultRegistryUrlTemplate": "https://portswigger.net/burp/releases/data?lastId=-1&pageSize=5",
       "format": "json",
       "transformTemplates": [
-        "{ \"releases\": $distinct($map(ResultSet.Results[releaseChannels[$contains(@, 'Stable')]]\
-          .builds[ProductEdition='Burp Suite Community Edition'], function($v) { {\"version\": $v.Version} })) }"
+        "{ \"releases\": $distinct(ResultSet.Results[releaseChannels[$contains(\"Stable\")]].builds[ProductEdition = \"Burp Suite Community Edition\"].{\"version\": Version}) }"
       ]
     }
   },
