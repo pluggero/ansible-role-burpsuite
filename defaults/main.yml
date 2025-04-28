@@ -16,7 +16,7 @@ burpsuite_install_path: "{{ burpsuite_install_dir }}/burpsuite-{{ burpsuite_edit
 burpsuite_extensions_dir: "{{ burpsuite_config_dir }}/bapps"
 burpsuite_extension_runtimes_dir: "{{ burpsuite_extensions_dir }}/runtimes"
 
-burpsuite_extension_runtime_jython_version: "2.7.3"
+burpsuite_extension_runtime_jython_version: "2.7.4"
 burpsuite_extension_runtime_jython_jar: "jython-standalone.jar"
 burpsuite_extension_runtime_jython_url: "https://repo1.maven.org/maven2/org/python/jython-standalone/{{ burpsuite_extension_runtime_jython_version }}/jython-standalone-{{ burpsuite_extension_runtime_jython_version }}.jar"
 burpsuite_extension_runtime_jython_checksum_url: "{{ burpsuite_extension_runtime_jython_url }}.sha256"
