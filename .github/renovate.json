@@ -1,18 +1,31 @@
 {
-  "extends": ["config:best-practices", ":disableRateLimiting"],
-  "enabledManagers": ["github-actions", "pip_requirements", "custom.regex"],
+  "extends": [
+    "config:best-practices",
+    ":disableRateLimiting"
+  ],
+  "enabledManagers": [
+    "github-actions",
+    "pip_requirements",
+    "custom.regex"
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^defaults/main\\.yml$"],
-      "matchStrings": ["burpsuite_version:\\s+\"(?<currentValue>[\\d\\.]+)\""],
+      "managerFilePatterns": [
+        "/^defaults/main\\.yml$/"
+      ],
+      "matchStrings": [
+        "burpsuite_version:\\s+\"(?<currentValue>[\\d\\.]+)\""
+      ],
       "datasourceTemplate": "custom.burpsuite",
       "depNameTemplate": "burpsuite",
       "versioningTemplate": "loose"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^defaults/main\\.yml$"],
+      "managerFilePatterns": [
+        "/^defaults/main\\.yml$/"
+      ],
       "matchStrings": [
         "burpsuite_extension_runtime_jython_version:\\s+\"(?<currentValue>[\\d\\.]+)\""
       ],
@@ -22,7 +35,9 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["^defaults/main\\.yml$"],
+      "managerFilePatterns": [
+        "/^defaults/main\\.yml$/"
+      ],
       "matchStrings": [
         "burpsuite_extension_runtime_jruby_version:\\s+\"(?<currentValue>[\\d\\.]+)\""
       ],
@@ -42,15 +57,21 @@
   },
   "packageRules": [
     {
-      "matchPackageNames": ["burpsuite"],
+      "matchPackageNames": [
+        "burpsuite"
+      ],
       "groupName": "Update Burpsuite Stable version"
     },
     {
-      "matchPackageNames": ["jython/jython"],
+      "matchPackageNames": [
+        "jython/jython"
+      ],
       "groupName": "Update Jython version"
     },
     {
-      "matchPackageNames": ["jruby/jruby"],
+      "matchPackageNames": [
+        "jruby/jruby"
+      ],
       "groupName": "Update JRuby version"
     }
   ]
