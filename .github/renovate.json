@@ -8,6 +8,7 @@
     "pip_requirements",
     "custom.regex"
   ],
+  "assignees": ["pluggero"],
   "customManagers": [
     {
       "customType": "regex",
