@@ -3,6 +3,19 @@
     "config:best-practices",
     ":disableRateLimiting"
   ],
+  "automerge": false,
+  "automergeType": "pr",
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions", "pip_requirements"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "automerge": false
+    }
+  ],
   "enabledManagers": [
     "github-actions",
     "pip_requirements",
@@ -55,25 +68,5 @@
         "{ \"releases\": $distinct(ResultSet.Results[releaseChannels[$contains(\"Stable\")]].builds[ProductEdition = \"Burp Suite Community Edition\"].{\"version\": Version}) }"
       ]
     }
-  },
-  "packageRules": [
-    {
-      "matchPackageNames": [
-        "burpsuite"
-      ],
-      "groupName": "Update Burpsuite Stable version"
-    },
-    {
-      "matchPackageNames": [
-        "jython/jython"
-      ],
-      "groupName": "Update Jython version"
-    },
-    {
-      "matchPackageNames": [
-        "jruby/jruby"
-      ],
-      "groupName": "Update JRuby version"
-    }
-  ]
+  }
 }
