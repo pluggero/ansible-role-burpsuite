@@ -22,7 +22,7 @@
           block:
             - name: Retrieve data from PortSwigger releases API
               ansible.builtin.set_fact:
-                burpsuite_releases: "{{ lookup('url', 'https://portswigger.net/burp/releases/data?lastId=-1&pageSize=20') }}"
+                burpsuite_releases: "{{ lookup('url', 'https://portswigger.net/burp/releases/data?lastId=-1&pageSize=20') | from_json }}"
 
             - name: Get release data
               ansible.builtin.set_fact:
