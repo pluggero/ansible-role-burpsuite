@@ -1,7 +1,7 @@
 ---
 burpsuite_config_dir: "{{ ansible_env.HOME }}/.BurpSuite"
 
-burpsuite_version: "2025.8.4"
+burpsuite_version: "2025.8.6"
 burpsuite_edition: "community"
 burpsuite_release_channel: "Stable"
 burpsuite_install_method: "source"
