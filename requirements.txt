@@ -1,4 +1,4 @@
 yamllint==1.37.1
-ansible==12.1.0
+ansible==12.2.0
 molecule==25.9.0
 molecule-plugins[docker]==25.8.12
