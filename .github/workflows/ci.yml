@@ -2,11 +2,12 @@
 name: CI
 "on":
   pull_request:
-  push:
-    branches:
-      - main
   schedule:
     - cron: "0 7 * * 5"
+
+concurrency:
+  group: ansible-roles-ci
+  cancel-in-progress: false
 
 defaults:
   run:
@@ -69,3 +70,16 @@ jobs:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
           MOLECULE_DISTRO: ${{ matrix.distro }}
+
+  status-check:
+    name: Status Check
+    runs-on: ubuntu-latest
+    needs: [lint, molecule]
+    if: always()
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Check all jobs passed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
