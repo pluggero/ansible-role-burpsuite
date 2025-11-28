@@ -20,28 +20,16 @@
 
         - name: Retrieve burpsuite installer checksum
           block:
-            - name: Retrieve data from PortSwigger releases API
-              ansible.builtin.set_fact:
-                burpsuite_releases: "{{ lookup('url', 'https://portswigger.net/burp/releases/data?lastId=-1&pageSize=20') | from_json }}"
-
-            - name: Get release data
-              ansible.builtin.set_fact:
-                burpsuite_release_data: >-
-                  {{
-                    burpsuite_releases.ResultSet.Results
-                    | selectattr('releaseChannels', 'contains', burpsuite_release_channel)
-                    | map(attribute='builds')
-                    | flatten
-                    | selectattr('ProductId', 'equalto', burpsuite_edition)
-                    | selectattr('Version', 'equalto', burpsuite_version)
-                    | selectattr('ProductPlatform', 'equalto', 'Linux')
-                    | list
-                    | first
-                  }}
+            - name: Fetch release data with pagination support
+              ansible.builtin.include_tasks: noauto_fetch_release_checksum.yml
 
             - name: Set release facts
               ansible.builtin.set_fact:
                 burpsuite_download_checksum: "{{ burpsuite_release_data.Sha256Checksum }}"
+
+            - name: Debug checksum
+              ansible.builtin.debug:
+                msg: "SHA-256 checksum for {{ burpsuite_edition }} Linux {{ burpsuite_version }}: {{ burpsuite_download_checksum }}"
 
         - name: Set installer script filename
           ansible.builtin.set_fact:
