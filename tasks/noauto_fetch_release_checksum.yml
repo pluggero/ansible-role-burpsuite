@@ -1,0 +1,110 @@
+---
+# Recursive task to fetch Burp Suite release checksum with API pagination
+# This task searches through the PortSwigger releases API pages until it finds
+# the specified version, or exhausts all available results.
+#
+# Pagination works by passing both lastId and previousLastId to the API.
+# For each page, we take the last element's ID from the Results array and use it
+# as both lastId and previousLastId for the next request.
+#
+# Required variables (set by caller):
+#   - burpsuite_version: Target version to find
+#   - burpsuite_edition: Product edition (e.g., 'pro', 'community')
+#   - burpsuite_release_channel: Release channel (e.g., 'Stable', 'EarlyAdopter')
+#
+# Internal state variables (initialized on first call, maintained through recursion):
+#   - burpsuite_api_lastid: Current pagination cursor (starts at -1)
+#   - burpsuite_api_previous_lastid: Previous pagination cursor (starts at -1)
+#   - burpsuite_release_found: Boolean flag indicating if target was found
+#
+# Output variables (set when version is found):
+#   - burpsuite_release_data: Full release object containing Sha256Checksum and other metadata
+
+- name: Initialize pagination state variables on first call
+  ansible.builtin.set_fact:
+    burpsuite_api_lastid: "{{ burpsuite_api_lastid | default('-1') }}"
+    burpsuite_api_previous_lastid: "{{ burpsuite_api_previous_lastid | default('-1') }}"
+    burpsuite_release_found: "{{ burpsuite_release_found | default(false) }}"
+
+- name: Fetch current page from PortSwigger releases API
+  when: not burpsuite_release_found
+  block:
+    - name: Call releases API with current pagination cursor
+      ansible.builtin.uri:
+        url: "https://portswigger.net/burp/releases/data?lastId={{ burpsuite_api_lastid }}&previousLastId={{ burpsuite_api_previous_lastid }}"
+        return_content: true
+        status_code: 200
+      register: burpsuite_api_response
+
+    - name: Parse API response
+      ansible.builtin.set_fact:
+        burpsuite_api_data: "{{ burpsuite_api_response.content | from_json }}"
+
+    - name: Validate API response structure
+      ansible.builtin.assert:
+        that:
+          - burpsuite_api_data.ResultSet is defined
+          - burpsuite_api_data.ResultSet.Results is defined
+        fail_msg: "API response missing expected structure (ResultSet.Results)"
+        quiet: true
+
+    - name: Debug pagination and versions
+      ansible.builtin.debug:
+        msg: "Page IDs: {{ burpsuite_api_data.ResultSet.Results | map(attribute='id') | list }} | Versions: {{ burpsuite_api_data.ResultSet.Results | selectattr('releaseChannels', 'contains', burpsuite_release_channel) | map(attribute='builds') | flatten | selectattr('ProductId', 'equalto', burpsuite_edition) | selectattr('ProductPlatform', 'equalto', 'Linux') | map(attribute='Version') | unique | list }}"
+
+    - name: Search current page for target release
+      ansible.builtin.set_fact:
+        burpsuite_release_candidates: >-
+          {{
+            burpsuite_api_data.ResultSet.Results
+            | selectattr('releaseChannels', 'contains', burpsuite_release_channel)
+            | map(attribute='builds')
+            | flatten
+            | selectattr('ProductId', 'equalto', burpsuite_edition)
+            | selectattr('Version', 'equalto', burpsuite_version)
+            | selectattr('ProductPlatform', 'equalto', 'Linux')
+            | list
+          }}
+
+    - name: Mark as found if version exists on this page
+      ansible.builtin.set_fact:
+        burpsuite_release_found: true
+        burpsuite_release_data: "{{ burpsuite_release_candidates | first }}"
+      when: burpsuite_release_candidates | length > 0
+
+    - name: Check if pagination should continue
+      when: not burpsuite_release_found
+      block:
+        - name: Check if more results are available
+          ansible.builtin.set_fact:
+            burpsuite_api_has_more: "{{ burpsuite_api_data.ResultSet.HasMoreResults | default(false) }}"
+
+        - name: Fail if version not found and no more pages
+          ansible.builtin.fail:
+            msg: >-
+              Version {{ burpsuite_version }} (edition={{ burpsuite_edition }},
+              channel={{ burpsuite_release_channel }}, platform=Linux) not found
+              in PortSwigger releases API after checking all available pages.
+          when: not burpsuite_api_has_more
+
+        - name: Calculate next pagination cursor
+          when: burpsuite_api_has_more
+          block:
+            - name: Validate that Results array is not empty
+              ansible.builtin.assert:
+                that:
+                  - burpsuite_api_data.ResultSet.Results | length > 0
+                fail_msg: "API returned HasMoreResults=true but Results array is empty"
+                quiet: true
+
+            - name: Get last element's ID from current results array
+              ansible.builtin.set_fact:
+                burpsuite_api_last_element_id: "{{ (burpsuite_api_data.ResultSet.Results | last).id }}"
+
+            - name: Update pagination state for next iteration
+              ansible.builtin.set_fact:
+                burpsuite_api_lastid: "{{ burpsuite_api_last_element_id }}"
+                burpsuite_api_previous_lastid: "{{ burpsuite_api_last_element_id }}"
+
+            - name: Recursively fetch next page
+              ansible.builtin.include_tasks: noauto_fetch_release_checksum.yml
