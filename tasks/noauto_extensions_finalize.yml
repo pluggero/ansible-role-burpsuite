@@ -7,6 +7,6 @@
     chown -R root:root "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
     chmod -R 0665 "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
     rm -f "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
-    rm -f "/tmp/burpsuite_{{ extension.name }}.bapp"
+    rm -f "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp"
   become: true
   changed_when: true  # noqa: no-changed-when
