@@ -2,9 +2,11 @@
 <!DOCTYPE map SYSTEM "http://java.sun.com/dtd/preferences.dtd">
 <map MAP_XML_VERSION="1.0">
 {% if burpsuite_eula_accepted %}
-  <entry key="suite.eulaAccepted" value="11"/>
+  <entry key="eulapro" value="11"/>
+  <entry key="eulacommunity" value="4"/>
 {% endif %}
   <entry key="suite.feedbackReportingEnabled" value="{{ burpsuite_portswigger_analytics_enabled | string | lower }}"/>
+  <entry key="discover.latestViewedDiscoverContentRevision" value="{{ burpsuite_latest_discover_content_revision }}"/>
 {% for license in burpsuite_pro_license %}
   <entry key="license{{ loop.index }}" value="{{ license }}"/>
 {% endfor %}

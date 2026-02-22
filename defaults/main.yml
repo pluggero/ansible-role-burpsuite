@@ -83,6 +83,7 @@ burpsuite_prefs_file: "{{ burpsuite_prefs_dir }}/prefs.xml"
 
 burpsuite_eula_accepted: false
 burpsuite_portswigger_analytics_enabled: false
+burpsuite_latest_discover_content_revision: "1"
 burpsuite_pro_license: []
 # - "your-first-license-key"
 # - "your-second-license-key"
