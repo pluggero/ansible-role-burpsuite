@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE map SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<map MAP_XML_VERSION="1.0">
+{% if burpsuite_eula_accepted %}
+  <entry key="suite.eulaAccepted" value="11"/>
+{% endif %}
+  <entry key="suite.feedbackReportingEnabled" value="{{ burpsuite_portswigger_analytics_enabled | string | lower }}"/>
+{% for license in burpsuite_pro_license %}
+  <entry key="license{{ loop.index }}" value="{{ license }}"/>
+{% endfor %}
+{% for pref in burpsuite_additional_prefs %}
+  <entry key="{{ pref.key }}" value="{{ pref.value }}"/>
+{% endfor %}
+</map>

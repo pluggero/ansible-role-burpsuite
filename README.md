@@ -49,6 +49,24 @@ BApp extensions can be configured using:
 
 External extensions: `burpsuite_extensions_external`
 
+```yaml
+burpsuite_eula_accepted: false
+burpsuite_portswigger_analytics_enabled: false
+burpsuite_pro_license: []  # List of license strings (renders as license1, license2, etc.)
+burpsuite_additional_prefs: []  # Custom Java preferences: [{key: "...", value: "..."}]
+```
+
+Java preferences configuration.
+
+```yaml
+burpsuite_collaborator_type: "none"  # default, none, or private
+burpsuite_collaborator_location: ""
+burpsuite_collaborator_polling_location: ""
+burpsuite_collaborator_poll_over_unencrypted_http: false
+```
+
+Collaborator server configuration. When using `private`, both location fields are required.
+
 ## Dependencies
 
 None.

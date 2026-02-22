@@ -76,3 +76,22 @@ burpsuite_extensions_external: []
 # - name: "CSTC"
 #   download_url: "https://github.com/usdAG/cstc/releases/download/v1.3.4/CSTC-1.3.4-jar-with-dependencies.jar"
 #   loaded: true
+
+# Burp Suite Java Preferences
+burpsuite_prefs_dir: "{{ ansible_env.HOME }}/.java/.userPrefs/burp"
+burpsuite_prefs_file: "{{ burpsuite_prefs_dir }}/prefs.xml"
+
+burpsuite_eula_accepted: false
+burpsuite_portswigger_analytics_enabled: false
+burpsuite_pro_license: []
+# - "your-first-license-key"
+# - "your-second-license-key"
+burpsuite_additional_prefs: []
+# - key: "free.suite.updatesdisabledforaweeksince"
+#   value: "2000000000000"
+
+# Collaborator Server Configuration
+burpsuite_collaborator_type: "none"
+burpsuite_collaborator_location: ""
+burpsuite_collaborator_polling_location: ""
+burpsuite_collaborator_poll_over_unencrypted_http: false
