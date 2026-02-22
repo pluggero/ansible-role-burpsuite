@@ -10,10 +10,14 @@
     - name: Update pacman cache
       community.general.pacman:
         update_cache: true
+      changed_when: false # The pacman module currently does not support cache_valid_time.
       become: true
 
     - name: Ensure burpsuite dependencies are installed
       community.general.pacman:
-        name: "{{ burpsuite_dep_pkgs }}"
+        name: "{{ package }}"
         state: present
+      loop: "{{ burpsuite_dep_pkgs }}"
+      loop_control:
+        loop_var: package
       become: true
