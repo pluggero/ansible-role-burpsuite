@@ -1,0 +1,12 @@
+---
+# Extract BApp extension archive
+# Runs synchronously (extraction is fast for small .bapp files)
+# Note: Using unzip command instead of unarchive module because unarchive doesn't support async
+
+- name: Extract bapp archive for {{ extension.name }}  # noqa: command-instead-of-module
+  ansible.builtin.shell: |
+    unzip -o "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp" -d "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+  args:
+    creates: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/BappManifest.bmf"
+  become: true
+  changed_when: true
