@@ -1,0 +1,24 @@
+---
+# Re-read manifest after installation to get entry_point
+# This ensures entry_point is available for newly installed extensions
+
+- name: Read manifest file for {{ extension.name }}
+  ansible.builtin.slurp:
+    src: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/BappManifest.bmf"
+  register: burpsuite_post_install_manifest
+  become: true
+
+- name: Extract entry_point from manifest for {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_post_entry_match: "{{ burpsuite_post_install_manifest.content | b64decode | regex_search('EntryPoint: (.+)', '\\1') }}"
+  when: burpsuite_post_install_manifest.content is defined
+
+- name: Update entry_point for {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_extension_versions: >-
+      {{ burpsuite_extension_versions | combine({
+        extension.name: burpsuite_extension_versions[extension.name] | combine({
+          'entry_point': (burpsuite_post_entry_match[0] if (burpsuite_post_entry_match is not none and burpsuite_post_entry_match | length > 0) else '')
+        })
+      }, recursive=true) }}
+  when: burpsuite_post_install_manifest.content is defined

@@ -1,0 +1,53 @@
+---
+# Batch check all extension versions in parallel
+# This determines which extensions need installation
+
+- name: Check if extension folder exists for {{ extension.name }}
+  ansible.builtin.stat:
+    path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+  register: burpsuite_extension_folder_stat
+
+- name: Check if manifest file exists for {{ extension.name }}
+  ansible.builtin.stat:
+    path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/BappManifest.bmf"
+  register: burpsuite_manifest_file_stat
+  when: burpsuite_extension_folder_stat.stat.exists
+  become: true
+
+- name: Read manifest file for {{ extension.name }}
+  ansible.builtin.slurp:
+    src: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/BappManifest.bmf"
+  register: burpsuite_manifest_content
+  when: burpsuite_extension_folder_stat.stat.exists and burpsuite_manifest_file_stat.stat.exists | default(false)
+  become: true
+
+- name: Set extension version info for (not installed) {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_extension_versions: >-
+      {{ burpsuite_extension_versions | default({}) | combine({
+        extension.name: {
+          'installed_version': 'not_installed',
+          'entry_point': '',
+          'needs_install': true
+        }
+      }) }}
+  when: not burpsuite_extension_folder_stat.stat.exists or burpsuite_manifest_content is not defined or burpsuite_manifest_content.content is not defined
+
+- name: Set extension version info for (installed) {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_manifest_text: "{{ burpsuite_manifest_content.content | b64decode }}"
+    burpsuite_serial_match: "{{ burpsuite_manifest_content.content | b64decode | regex_search('SerialVersion: ([0-9]+)', '\\1') }}"
+    burpsuite_entry_match: "{{ burpsuite_manifest_content.content | b64decode | regex_search('EntryPoint: (.+)', '\\1') }}"
+  when: burpsuite_extension_folder_stat.stat.exists and burpsuite_manifest_content.content is defined
+
+- name: Build extension version info for (installed) {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_extension_versions: >-
+      {{ burpsuite_extension_versions | default({}) | combine({
+        extension.name: {
+          'installed_version': (burpsuite_serial_match[0] if (burpsuite_serial_match is not none and burpsuite_serial_match | length > 0) else 'not_installed'),
+          'entry_point': (burpsuite_entry_match[0] if (burpsuite_entry_match is not none and burpsuite_entry_match | length > 0) else ''),
+          'needs_install': (burpsuite_serial_match is none or burpsuite_serial_match | length == 0 or burpsuite_serial_match[0] != (extension.bapp_serial_version | string))
+        }
+      }) }}
+  when: burpsuite_extension_folder_stat.stat.exists and burpsuite_manifest_content.content is defined

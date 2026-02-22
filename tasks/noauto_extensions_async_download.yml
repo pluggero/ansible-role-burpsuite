@@ -1,0 +1,19 @@
+---
+# Asynchronously download BApp extension files
+# This task initiates parallel downloads and returns immediately
+# The calling task must poll for completion using async_status
+
+- name: Initiate async download for BApp extension {{ extension.name }}
+  ansible.builtin.get_url:
+    url: "https://portswigger.net/bappstore/bapps/download/{{ extension.bapp_uuid }}/{{ extension.bapp_serial_version }}"
+    dest: "/tmp/burpsuite_{{ extension.name }}.bapp"
+    mode: '0644'
+    force: true
+  async: 300  # Allow up to 5 minutes per download
+  poll: 0     # Don't wait, return immediately
+  register: burpsuite_download_job
+
+- name: Store download job ID for {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_bapp_download_jobs: "{{ burpsuite_bapp_download_jobs | default({}) | combine({extension.name: burpsuite_download_job.ansible_job_id}) }}"
+  when: burpsuite_download_job.ansible_job_id is defined
