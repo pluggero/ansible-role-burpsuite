@@ -48,3 +48,23 @@
   when:
     - burpsuite_extensions_bapp_community | length > 0
     - burpsuite_extensions_bapp_pro | length > 0
+
+- name: Assert that burpsuite_collaborator_type is valid
+  ansible.builtin.assert:
+    that:
+      - burpsuite_collaborator_type in ['default', 'none', 'private']
+    fail_msg: >-
+      The value of "burpsuite_collaborator_type" ({{ burpsuite_collaborator_type }}) is invalid.
+      Must be one of: [default, none, private].
+    success_msg: "The value of 'burpsuite_collaborator_type' is valid."
+
+- name: Assert that private collaborator configuration is complete
+  ansible.builtin.assert:
+    that:
+      - burpsuite_collaborator_location | length > 0
+      - burpsuite_collaborator_polling_location | length > 0
+    fail_msg: >-
+      When burpsuite_collaborator_type is 'private', both burpsuite_collaborator_location
+      and burpsuite_collaborator_polling_location must be set.
+    success_msg: "Private collaborator configuration is valid."
+  when: burpsuite_collaborator_type == "private"

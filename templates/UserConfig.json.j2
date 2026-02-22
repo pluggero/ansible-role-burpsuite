@@ -107,10 +107,10 @@
                 "show_progress":false
             },
             "collaborator_server":{
-                "location":"",
-                "poll_over_unencrypted_http":false,
-                "polling_location":"",
-                "type":"default"
+                "location":"{{ burpsuite_collaborator_location }}",
+                "poll_over_unencrypted_http":{{ burpsuite_collaborator_poll_over_unencrypted_http | lower }},
+                "polling_location":"{{ burpsuite_collaborator_polling_location }}",
+                "type":"{{ burpsuite_collaborator_type }}"
             },
             "embedded_browser":{
                 "allow_saving_browser_settings":true,
