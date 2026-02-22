@@ -15,6 +15,9 @@
 
     - name: Ensure burpsuite dependencies are installed
       ansible.builtin.apt:
-        name: "{{ burpsuite_dep_pkgs }}"
+        name: "{{ package }}"
         state: present
+      loop: "{{ burpsuite_dep_pkgs }}"
+      loop_control:
+        loop_var: package
       become: true
