@@ -1,6 +1,10 @@
 ---
 - name: Ensure burpsuite extension runtimes and extensions are installed
   block:
+    - name: Merge BApp extension lists based on edition
+      ansible.builtin.include_tasks:
+        file: noauto_merge_extensions.yml
+
     - name: Create burpsuite extensions directory
       ansible.builtin.file:
         path: "{{ burpsuite_extensions_dir }}"

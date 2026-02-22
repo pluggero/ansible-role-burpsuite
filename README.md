@@ -33,24 +33,21 @@ The release channel of burpsuite to install can be defined in the variable `burp
 It can be either `Stable` or `Early Adopter`.
 
 ```yaml
-burpsuite_extensions_bapp:
-  - name: "ParamMiner"
-    bapp_uuid: "17d2949a985c4b7ca092728dba871943"
-    bapp_serial_version: "33"
-    type: "java"
-    use_ai: false
-    loaded: true
+# Unified list (backward compatible)
+burpsuite_extensions_bapp: []
 
-burpsuite_extensions_external:
-  - name: "CSTC"
-    download_url: "https://github.com/usdAG/cstc/releases/download/v1.3.4/CSTC-1.3.4-jar-with-dependencies.jar"
-    loaded: true
+# Edition-specific lists (auto-merged based on burpsuite_edition)
+burpsuite_extensions_bapp_community: []
+burpsuite_extensions_bapp_pro: []
+
+burpsuite_extensions_external: []
 ```
 
-The extensions to install can be defined in the variables following variables:
+BApp extensions can be configured using:
+- `burpsuite_extensions_bapp` - Unified list (takes precedence if set)
+- `burpsuite_extensions_bapp_community` + `burpsuite_extensions_bapp_pro` - Edition-specific (auto-merged: community-only for community edition, both for pro edition)
 
-- `burpsuite_extensions_bapp`: Burp App Store extensions.
-- `burpsuite_extensions_external`: External extensions.
+External extensions: `burpsuite_extensions_external`
 
 ## Dependencies
 

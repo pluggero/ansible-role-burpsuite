@@ -25,3 +25,26 @@
       The value of "burpsuite_install_method" ({{ burpsuite_install_method }}) is invalid.
       Must be: [source].
     success_msg: "The value of 'burpsuite_install_method' is valid."
+
+- name: Extract bapp_uuid values from community extensions
+  ansible.builtin.set_fact:
+    burpsuite_community_uuids: "{{ burpsuite_extensions_bapp_community | map(attribute='bapp_uuid') | list }}"
+  when: burpsuite_extensions_bapp_community | length > 0
+
+- name: Extract bapp_uuid values from pro extensions
+  ansible.builtin.set_fact:
+    burpsuite_pro_uuids: "{{ burpsuite_extensions_bapp_pro | map(attribute='bapp_uuid') | list }}"
+  when: burpsuite_extensions_bapp_pro | length > 0
+
+- name: Assert that no duplicate bapp_uuid exists between community and pro extensions
+  ansible.builtin.assert:
+    that:
+      - burpsuite_community_uuids | intersect(burpsuite_pro_uuids) | length == 0
+    fail_msg: >-
+      Duplicate bapp_uuid found in both burpsuite_extensions_bapp_community and burpsuite_extensions_bapp_pro.
+      Duplicates: {{ burpsuite_community_uuids | intersect(burpsuite_pro_uuids) | join(', ') }}.
+      Each extension must appear in only one list.
+    success_msg: "No duplicate extensions found between community and pro lists."
+  when:
+    - burpsuite_extensions_bapp_community | length > 0
+    - burpsuite_extensions_bapp_pro | length > 0
