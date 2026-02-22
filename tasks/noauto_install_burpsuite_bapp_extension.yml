@@ -1,6 +1,11 @@
 ---
 - name: Installing burpsuite bapp extension
   block:
+    # Reset force install flag for each extension iteration
+    - name: Initialize force install flag
+      ansible.builtin.set_fact:
+        burpsuite_bapp_extensions_force_install: false
+
     - name: Import installed burpsuite bapp extension version check
       ansible.builtin.include_tasks: noauto_check_installed_bapp_extention_version.yml
 
@@ -16,7 +21,7 @@
       block:
         - name: Download bapp extension bapp file
           ansible.builtin.get_url:
-            url: "https://portswigger-cdn.net/bappstore/bapps/download/{{ extension.bapp_uuid }}/{{ extension.bapp_serial_version }}"
+            url: "https://portswigger.net/bappstore/bapps/download/{{ extension.bapp_uuid }}/{{ extension.bapp_serial_version }}"
             dest: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
             owner: root
             group: root
