@@ -6,7 +6,7 @@
 - name: Initiate async download for BApp extension {{ extension.name }}
   ansible.builtin.get_url:
     url: "https://portswigger.net/bappstore/bapps/download/{{ extension.bapp_uuid }}/{{ extension.bapp_serial_version }}"
-    dest: "/tmp/burpsuite_{{ extension.name }}.bapp"
+    dest: "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp"
     mode: '0644'
     force: true
   async: 300  # Allow up to 5 minutes per download

@@ -4,7 +4,7 @@
 
 - name: Copy and setup directory for {{ extension.name }}
   ansible.builtin.shell: |
-    cp "/tmp/burpsuite_{{ extension.name }}.bapp" "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+    cp "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp" "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
     chown root:root "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
     chmod 0644 "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
     mkdir -p "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
