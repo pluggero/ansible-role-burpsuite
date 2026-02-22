@@ -1,0 +1,22 @@
+---
+# This task merges community and pro BApp extension lists based on the edition
+# If burpsuite_extensions_bapp is already set, it is used as-is
+# Otherwise, extensions are merged based on burpsuite_edition
+
+- name: Check if burpsuite_extensions_bapp is already set
+  ansible.builtin.set_fact:
+    burpsuite_extensions_bapp_is_set: "{{ burpsuite_extensions_bapp | length > 0 }}"
+
+- name: Merge BApp extensions for community edition
+  ansible.builtin.set_fact:
+    burpsuite_extensions_bapp: "{{ burpsuite_extensions_bapp_community }}"
+  when:
+    - not burpsuite_extensions_bapp_is_set
+    - burpsuite_edition == 'community'
+
+- name: Merge BApp extensions for pro edition (community + pro)
+  ansible.builtin.set_fact:
+    burpsuite_extensions_bapp: "{{ burpsuite_extensions_bapp_community + burpsuite_extensions_bapp_pro }}"
+  when:
+    - not burpsuite_extensions_bapp_is_set
+    - burpsuite_edition == 'pro'
