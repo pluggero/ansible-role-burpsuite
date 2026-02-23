@@ -49,7 +49,7 @@
         },
         "extender":{
             "extensions":[
-{% set extensions = burpsuite_extensions_external + burpsuite_processed_bapp_extensions %}
+{% set extensions = burpsuite_sorted_extensions %}
 {% for extension in extensions %}
               {
                 "name":"{{ extension.name }}",

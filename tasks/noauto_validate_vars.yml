@@ -49,6 +49,50 @@
     - burpsuite_extensions_bapp_community | length > 0
     - burpsuite_extensions_bapp_pro | length > 0
 
+- name: Validate priority field in BApp extensions
+  ansible.builtin.assert:
+    that:
+      - item.priority is not defined or (item.priority | type_debug == 'int')
+    fail_msg: >-
+      Extension '{{ item.name }}' has invalid priority field.
+      Priority must be an integer, got: {{ item.priority | type_debug }}.
+    success_msg: "Extension '{{ item.name }}' has valid priority field."
+  loop: "{{ burpsuite_extensions_bapp }}"
+  when: burpsuite_extensions_bapp | length > 0
+
+- name: Validate priority field in external extensions
+  ansible.builtin.assert:
+    that:
+      - item.priority is not defined or (item.priority | type_debug == 'int')
+    fail_msg: >-
+      Extension '{{ item.name }}' has invalid priority field.
+      Priority must be an integer, got: {{ item.priority | type_debug }}.
+    success_msg: "Extension '{{ item.name }}' has valid priority field."
+  loop: "{{ burpsuite_extensions_external }}"
+  when: burpsuite_extensions_external | length > 0
+
+- name: Check for duplicate priority values (warning only)
+  block:
+    - name: Collect all extensions with explicit priority
+      ansible.builtin.set_fact:
+        burpsuite_all_priorities: >-
+          {{ (burpsuite_extensions_bapp | selectattr('priority', 'defined') | list) +
+             (burpsuite_extensions_external | selectattr('priority', 'defined') | list) }}
+
+    - name: Extract priority values
+      ansible.builtin.set_fact:
+        burpsuite_priority_values: "{{ burpsuite_all_priorities | map(attribute='priority') | list }}"
+      when: burpsuite_all_priorities | length > 0
+
+    - name: Warn about duplicate priorities
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: Duplicate priority values found: {{ burpsuite_priority_values | unique | difference(burpsuite_priority_values) }}.
+          Extensions with the same priority may load in unpredictable order.
+      when:
+        - burpsuite_all_priorities | length > 0
+        - burpsuite_priority_values | length != (burpsuite_priority_values | unique | length)
+
 - name: Assert that burpsuite_collaborator_type is valid
   ansible.builtin.assert:
     that:

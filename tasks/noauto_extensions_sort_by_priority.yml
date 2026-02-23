@@ -1,0 +1,39 @@
+---
+# Sort extensions by priority field (global sorting across all extension types)
+# Extensions without explicit priority use 1000 + (list position * 1000) as implicit priority
+# Lower priority numbers = higher execution priority (loaded first)
+
+- name: Merge all extension lists into single list for sorting
+  ansible.builtin.set_fact:
+    burpsuite_all_extensions_unsorted: "{{ burpsuite_extensions_external + burpsuite_processed_bapp_extensions }}"
+
+- name: Debug - Show unsorted extensions with priority field
+  ansible.builtin.debug:
+    msg: "Extension '{{ item.name }}' - priority: {{ item.priority | default('NOT SET') }}"
+  loop: "{{ burpsuite_all_extensions_unsorted }}"
+
+- name: Add implicit priority to extensions without explicit priority field
+  ansible.builtin.set_fact:
+    burpsuite_extensions_with_priority: >-
+      {% set result = [] -%}
+      {% for ext in burpsuite_all_extensions_unsorted -%}
+        {% if 'priority' in ext -%}
+          {% set _ = result.append(ext) -%}
+        {% else -%}
+          {% set _ = result.append(ext | combine({'priority': 1000 + (loop.index0 * 1000)})) -%}
+        {% endif -%}
+      {% endfor -%}
+      {{ result }}
+
+- name: Sort extensions by priority (lower number = higher priority)
+  ansible.builtin.set_fact:
+    burpsuite_sorted_extensions: "{{ burpsuite_extensions_with_priority | sort(attribute='priority') }}"
+
+- name: Debug - Show sorted extensions with priority
+  ansible.builtin.debug:
+    msg: "Sorted: {{ item.name }} (priority: {{ item.priority }})"
+  loop: "{{ burpsuite_sorted_extensions }}"
+
+- name: Display extension load order
+  ansible.builtin.debug:
+    msg: "Extension load order: {{ burpsuite_sorted_extensions | map(attribute='name') | list }}"
