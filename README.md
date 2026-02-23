@@ -49,6 +49,8 @@ BApp extensions can be configured using:
 
 External extensions: `burpsuite_extensions_external`
 
+**Extension Priority:** Optional `priority` field (integer) controls load order. Lower = loads first. Default: 1000 + (list position × 1000). Global across all types.
+
 ```yaml
 burpsuite_eula_accepted: false
 burpsuite_portswigger_analytics_enabled: false

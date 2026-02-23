@@ -50,6 +50,13 @@ burpsuite_bapp_extensions_force_install: false
 #   - pro: Both burpsuite_extensions_bapp_community and burpsuite_extensions_bapp_pro extensions are installed
 #
 # Note: Extensions cannot have duplicate bapp_uuid values across community and pro lists.
+#
+# Extension Priority:
+# - Extensions can have an optional 'priority' field (integer) to control load order
+# - Lower priority numbers = higher execution priority (loaded first)
+# - Extensions without 'priority' use 1000 + (list position * 1000) as implicit priority
+# - Priority is global across all extension types (BApp and external)
+# - Example: priority 10 loads before priority 100, which loads before default (1000, 2000, 3000...)
 
 burpsuite_extensions_bapp: []
 # - name: "ParamMiner"
@@ -57,6 +64,7 @@ burpsuite_extensions_bapp: []
 #   bapp_serial_version: "33"
 #   use_ai: false
 #   loaded: true
+#   priority: 10  # Optional: load this extension first
 
 burpsuite_extensions_bapp_community: []
 # - name: "ParamMiner"
@@ -64,6 +72,7 @@ burpsuite_extensions_bapp_community: []
 #   bapp_serial_version: "33"
 #   use_ai: false
 #   loaded: true
+#   priority: 50  # Optional: controls load order
 
 burpsuite_extensions_bapp_pro: []
 # - name: "ActiveScan++"
@@ -71,11 +80,13 @@ burpsuite_extensions_bapp_pro: []
 #   bapp_serial_version: "50"
 #   use_ai: false
 #   loaded: true
+#   # priority not specified: uses list position * 1000
 
 burpsuite_extensions_external: []
 # - name: "CSTC"
 #   download_url: "https://github.com/usdAG/cstc/releases/download/v1.3.4/CSTC-1.3.4-jar-with-dependencies.jar"
 #   loaded: true
+#   priority: 5  # Optional: load before BApp extensions
 
 # Burp Suite Java Preferences
 burpsuite_prefs_dir: "{{ ansible_env.HOME }}/.java/.userPrefs/burp"

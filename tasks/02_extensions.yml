@@ -111,7 +111,7 @@
     - name: Build processed extensions list
       ansible.builtin.set_fact:
         burpsuite_processed_bapp_extensions: >-
-          {{ (burpsuite_processed_bapp_extensions | default([])) + [ {
+          {% set base_ext = {
             'name': item.name,
             'bapp_uuid': item.bapp_uuid,
             'bapp_serial_version': item.bapp_serial_version,
@@ -119,7 +119,9 @@
             'use_ai': item.use_ai,
             'loaded': item.loaded,
             'entry_point': burpsuite_extension_versions[item.name].entry_point | default('')
-          }] }}
+          } -%}
+          {{ (burpsuite_processed_bapp_extensions | default([])) +
+             [base_ext | combine({'priority': item.priority}) if item.priority is defined else base_ext] }}
       loop: "{{ burpsuite_extensions_bapp }}"
       loop_control:
         loop_var: item
@@ -135,3 +137,8 @@
       loop_control:
         loop_var: extension
       become: true
+
+    # Phase 8: Sort all extensions by priority for config generation
+    - name: Sort extensions by priority
+      ansible.builtin.include_tasks:
+        file: noauto_extensions_sort_by_priority.yml
