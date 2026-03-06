@@ -50,7 +50,7 @@
 
     - name: Debug pagination and versions
       ansible.builtin.debug:
-        msg: "Page IDs: {{ burpsuite_api_data.ResultSet.Results | map(attribute='id') | list }} | Versions: {{ burpsuite_api_data.ResultSet.Results | selectattr('releaseChannels', 'contains', burpsuite_release_channel) | map(attribute='builds') | flatten | selectattr('ProductId', 'equalto', burpsuite_edition) | selectattr('ProductPlatform', 'equalto', 'Linux') | map(attribute='Version') | unique | list }}"
+        msg: "Page IDs: {{ burpsuite_api_data.ResultSet.Results | map(attribute='id') | list }} | Versions: {{ burpsuite_api_data.ResultSet.Results | selectattr('releaseChannels', 'contains', burpsuite_release_channel) | map(attribute='builds') | flatten | selectattr('BuildCategoryId', 'equalto', burpsuite_edition) | selectattr('BuildCategoryPlatform', 'equalto', 'Linux') | map(attribute='Version') | unique | list }}"
 
     - name: Search current page for target release
       ansible.builtin.set_fact:
@@ -60,9 +60,9 @@
             | selectattr('releaseChannels', 'contains', burpsuite_release_channel)
             | map(attribute='builds')
             | flatten
-            | selectattr('ProductId', 'equalto', burpsuite_edition)
+            | selectattr('BuildCategoryId', 'equalto', burpsuite_edition)
             | selectattr('Version', 'equalto', burpsuite_version)
-            | selectattr('ProductPlatform', 'equalto', 'Linux')
+            | selectattr('BuildCategoryPlatform', 'equalto', 'Linux')
             | list
           }}
 
