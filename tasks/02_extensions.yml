@@ -40,6 +40,7 @@
       ansible.builtin.set_fact:
         burpsuite_processed_bapp_extensions: []
         burpsuite_bapp_download_jobs: {}
+        burpsuite_bapp_job_extension_map: {}
         burpsuite_extension_versions: {}
 
     # Phase 1: Batch check all extension versions in parallel
@@ -70,6 +71,40 @@
       retries: 120
       delay: 5
       when: burpsuite_bapp_download_jobs | length > 0
+      ignore_errors: true
+
+    - name: Retry failed extension downloads synchronously
+      ansible.builtin.get_url:
+        url: "https://portswigger.net/bappstore/bapps/download/{{ retry_ext.bapp_uuid }}/{{ retry_ext.bapp_serial_version }}"
+        dest: "/tmp/burpsuite_{{ retry_ext.bapp_uuid }}.bapp"
+        mode: '0644'
+        force: true
+      retries: 3
+      delay: 10
+      loop: >-
+        {{
+          burpsuite_download_results.results
+          | default([])
+          | selectattr('failed', 'defined')
+          | selectattr('failed')
+          | map(attribute='job_id')
+          | map('extract', burpsuite_bapp_job_extension_map)
+          | select('defined')
+          | map('extract', dict(
+              burpsuite_extensions_bapp | map(attribute='name')
+              | zip(burpsuite_extensions_bapp)
+            ))
+          | list
+        }}
+      loop_control:
+        loop_var: retry_ext
+      when: >-
+        burpsuite_download_results.results
+        | default([])
+        | selectattr('failed', 'defined')
+        | selectattr('failed')
+        | list
+        | length > 0
 
     # Phase 3: Copy and directory creation (synchronous)
     - name: Copy and setup directories for extensions

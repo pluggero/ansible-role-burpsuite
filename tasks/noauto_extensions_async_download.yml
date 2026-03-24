@@ -16,4 +16,5 @@
 - name: Store download job ID for {{ extension.name }}
   ansible.builtin.set_fact:
     burpsuite_bapp_download_jobs: "{{ burpsuite_bapp_download_jobs | default({}) | combine({extension.name: burpsuite_download_job.ansible_job_id}) }}"
+    burpsuite_bapp_job_extension_map: "{{ burpsuite_bapp_job_extension_map | default({}) | combine({burpsuite_download_job.ansible_job_id: extension.name}) }}"
   when: burpsuite_download_job.ansible_job_id is defined
