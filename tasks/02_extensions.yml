@@ -67,7 +67,7 @@
         loop_var: job_id
       register: burpsuite_download_results
       until: burpsuite_download_results.finished
-      retries: 60
+      retries: 120
       delay: 5
       when: burpsuite_bapp_download_jobs | length > 0
 
