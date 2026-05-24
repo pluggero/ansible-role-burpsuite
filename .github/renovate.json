@@ -80,10 +80,10 @@
   ],
   "customDatasources": {
     "burpsuite": {
-      "defaultRegistryUrlTemplate": "https://portswigger.net/burp/releases/data?lastId=-1&pageSize=5",
+      "defaultRegistryUrlTemplate": "https://portswigger.net/burp/releases/data?lastId=-1&pageSize=20",
       "format": "json",
       "transformTemplates": [
-        "{ \"releases\": $distinct(ResultSet.Results[releaseChannels[$contains(\"Stable\")]].builds[BuildCategoryEdition = \"Burp Suite Community Edition\"].{\"version\": Version}) }"
+        "{ \"releases\": $distinct(ResultSet.Results[releaseChannels[$contains(\"Stable\")]].builds[BuildCategoryEdition = \"Burp Suite Desktop\"].{\"version\": Version}) }"
       ]
     }
   }
