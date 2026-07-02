@@ -6,7 +6,6 @@
   ansible.builtin.slurp:
     src: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}/BappManifest.bmf"
   register: burpsuite_post_install_manifest
-  become: true
 
 - name: Extract entry_point from manifest for {{ extension.name }}
   ansible.builtin.set_fact:

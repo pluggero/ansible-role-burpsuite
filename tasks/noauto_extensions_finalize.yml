@@ -1,12 +1,48 @@
 ---
 # Finalization: set permissions and cleanup for BApp extensions
-# This runs after extraction completes (synchronous - fast operations)
+# recurse: true sets ownership + 0665 on all contents in one shot.
+# Directories are then found and restored to 0775 (execute bit required for traversal).
 
-- name: Set permissions and cleanup for {{ extension.name }}
-  ansible.builtin.shell: |
-    chown -R root:root "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
-    chmod -R 0665 "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
-    rm -f "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
-    rm -f "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp"
+- name: Set ownership and file permissions for {{ extension.name }}
+  ansible.builtin.file:
+    path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0665"
+    recurse: true
   become: true
-  changed_when: true  # noqa: no-changed-when
+
+- name: Find subdirectories in {{ extension.name }} extension directory
+  ansible.builtin.find:
+    paths: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+    recurse: true
+    file_type: directory
+  register: burpsuite_ext_found_dirs
+  become: true
+
+- name: Set subdirectory permissions for {{ extension.name }}
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "0775"
+  loop: "{{ burpsuite_ext_found_dirs.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: burpsuite_ext_found_dirs.files | length > 0
+  become: true
+
+- name: Set extension directory permissions for {{ extension.name }}
+  ansible.builtin.file:
+    path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+    state: directory
+    mode: "0775"
+  become: true
+
+- name: Remove downloaded bapp archives for {{ extension.name }}
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+    - "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp"

@@ -2,15 +2,21 @@
 # BApp extension installation
 # Copy and setup operations run synchronously (fast operations)
 
-- name: Copy and setup directory for {{ extension.name }}
-  ansible.builtin.shell: |
-    cp "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp" "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
-    chown root:root "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
-    chmod 0644 "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
-    mkdir -p "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
-    chown root:root "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
-    chmod 0766 "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
-  args:
-    creates: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+- name: Copy bapp archive for {{ extension.name }}
+  ansible.builtin.copy:
+    src: "/tmp/burpsuite_{{ extension.bapp_uuid }}.bapp"
+    dest: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+    remote_src: true
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0665"
   become: true
-  changed_when: true  # noqa: no-changed-when
+
+- name: Create extension directory for {{ extension.name }}
+  ansible.builtin.file:
+    path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0775"
+  become: true

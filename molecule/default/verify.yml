@@ -1,0 +1,14 @@
+---
+- name: Verify extension manifests have correct versions post-upgrade
+  hosts: all
+  tasks:
+    - name: Read ParamMiner manifest
+      ansible.builtin.slurp:
+        src: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943/BappManifest.bmf"
+      register: paraminer_manifest
+
+    - name: Assert ParamMiner SerialVersion is 36
+      ansible.builtin.assert:
+        that:
+          - "'SerialVersion: 36' in (paraminer_manifest.content | b64decode)"
+        fail_msg: "ParamMiner was not upgraded — stale manifest still present"

@@ -1,0 +1,17 @@
+---
+- name: Prepare upgrade test — seed stale extension state
+  hosts: all
+  tasks:
+    - name: Create stale ParamMiner extension directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943"
+        state: directory
+        mode: "0775"
+
+    - name: Write stale BappManifest.bmf (SerialVersion 1 instead of 36)
+      ansible.builtin.copy:
+        dest: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943/BappManifest.bmf"
+        content: |
+          SerialVersion: 1
+          EntryPoint: burp.BurpExtender
+        mode: "0664"
