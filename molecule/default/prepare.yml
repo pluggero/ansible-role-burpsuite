@@ -1,0 +1,17 @@
+---
+- name: Prepare idempotency test — seed a pre-existing extension install
+  hosts: all
+  tasks:
+    - name: Create pre-existing ParamMiner extension directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943"
+        state: directory
+        mode: "0775"
+
+    - name: Write pre-existing BappManifest.bmf
+      ansible.builtin.copy:
+        dest: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943/BappManifest.bmf"
+        content: |
+          SerialVersion: 1
+          EntryPoint: burp.BurpExtender
+        mode: "0664"

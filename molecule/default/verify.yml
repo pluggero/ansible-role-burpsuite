@@ -1,0 +1,18 @@
+---
+- name: Verify a pre-existing BApp extension is left untouched
+  hosts: all
+  tasks:
+    - name: Read ParamMiner manifest
+      ansible.builtin.slurp:
+        src: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943/BappManifest.bmf"
+      register: paraminer_manifest
+
+    # PortSwigger's BApp download endpoint always serves the current latest release regardless
+    # of the serial requested, so a normal converge must not touch an already-installed
+    # extension — there's no reliable way to tell "stale" from "current". Reinstalling is only
+    # ever done via burpsuite_bapp_extensions_force_install.
+    - name: Assert ParamMiner manifest was left untouched
+      ansible.builtin.assert:
+        that:
+          - "'SerialVersion: 1' in (paraminer_manifest.content | b64decode)"
+        fail_msg: "Pre-existing ParamMiner install was modified — needs_install should be false for an already-installed extension"

@@ -1,0 +1,77 @@
+---
+# Install (or skip) a single BApp extension, synchronously.
+# Download/extract/permission work only runs when the on-disk manifest is missing
+# or out of date; the version check itself always runs first to make that call.
+
+- name: Check installed version for {{ extension.name }}
+  ansible.builtin.include_tasks:
+    file: noauto_extensions_check_version.yml
+
+- name: Install BApp extension {{ extension.name }}
+  when: burpsuite_extension_versions[extension.name].needs_install
+  block:
+    - name: Download bapp archive for {{ extension.name }}
+      ansible.builtin.get_url:
+        url: "https://portswigger.net/bappstore/bapps/download/{{ extension.bapp_uuid }}/{{ extension.bapp_serial_version }}"
+        dest: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        mode: "0665"
+        force: true
+      register: burpsuite_bapp_download_result
+      until: burpsuite_bapp_download_result is succeeded
+      retries: 3
+      delay: 5
+      become: true
+
+    - name: Create extension directory for {{ extension.name }}
+      ansible.builtin.file:
+        path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        mode: "0775"
+      become: true
+
+    - name: Extract bapp archive for {{ extension.name }}
+      ansible.builtin.unarchive:
+        src: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+        dest: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+        remote_src: true
+      become: true
+
+    - name: Set ownership and permissions for {{ extension.name }}
+      ansible.builtin.file:
+        path: "{{ burpsuite_extensions_dir }}/{{ extension.bapp_uuid }}"
+        state: directory
+        recurse: true
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        mode: "u=rwX,g=rwX,o=rX"
+      become: true
+
+    - name: Remove downloaded bapp archive for {{ extension.name }}
+      ansible.builtin.file:
+        path: "{{ burpsuite_download_dir }}/{{ extension.bapp_uuid }}.bapp"
+        state: absent
+      become: true
+
+- name: Re-check installed version for {{ extension.name }}
+  ansible.builtin.include_tasks:
+    file: noauto_extensions_check_version.yml
+  when: burpsuite_extension_versions[extension.name].needs_install
+
+- name: Add processed extension list entry for {{ extension.name }}
+  ansible.builtin.set_fact:
+    burpsuite_processed_bapp_extensions: >-
+      {% set base_ext = {
+        'name': extension.name,
+        'bapp_uuid': extension.bapp_uuid,
+        'bapp_serial_version': extension.bapp_serial_version,
+        'type': extension.type | default(''),
+        'use_ai': extension.use_ai,
+        'loaded': extension.loaded,
+        'entry_point': burpsuite_extension_versions[extension.name].entry_point | default('')
+      } -%}
+      {{ burpsuite_processed_bapp_extensions +
+         [base_ext | combine({'priority': extension.priority}) if extension.priority is defined else base_ext] }}
