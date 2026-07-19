@@ -1,5 +1,5 @@
 ---
-- name: Verify stale extension manifests are refreshed on upgrade
+- name: Verify a pre-existing BApp extension is left untouched
   hosts: all
   tasks:
     - name: Read ParamMiner manifest
@@ -8,11 +8,11 @@
       register: paraminer_manifest
 
     # PortSwigger's BApp download endpoint always serves the current latest release regardless
-    # of the serial requested, so the post-upgrade SerialVersion can't be asserted as an exact
-    # value here. Instead confirm the stale seeded manifest was replaced by a real one.
-    - name: Assert ParamMiner manifest was refreshed
+    # of the serial requested, so a normal converge must not touch an already-installed
+    # extension — there's no reliable way to tell "stale" from "current". Reinstalling is only
+    # ever done via burpsuite_bapp_extensions_force_install.
+    - name: Assert ParamMiner manifest was left untouched
       ansible.builtin.assert:
         that:
-          - "'SerialVersion: 1' not in (paraminer_manifest.content | b64decode)"
-          - "'EntryPoint:' in (paraminer_manifest.content | b64decode)"
-        fail_msg: "ParamMiner was not upgraded — stale manifest still present"
+          - "'SerialVersion: 1' in (paraminer_manifest.content | b64decode)"
+        fail_msg: "Pre-existing ParamMiner install was modified — needs_install should be false for an already-installed extension"

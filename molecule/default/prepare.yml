@@ -1,14 +1,14 @@
 ---
-- name: Prepare upgrade test — seed stale extension state
+- name: Prepare idempotency test — seed a pre-existing extension install
   hosts: all
   tasks:
-    - name: Create stale ParamMiner extension directory
+    - name: Create pre-existing ParamMiner extension directory
       ansible.builtin.file:
         path: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943"
         state: directory
         mode: "0775"
 
-    - name: Write stale BappManifest.bmf (SerialVersion 1 instead of 36)
+    - name: Write pre-existing BappManifest.bmf
       ansible.builtin.copy:
         dest: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943/BappManifest.bmf"
         content: |
