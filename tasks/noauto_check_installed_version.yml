@@ -1,15 +1,9 @@
 ---
 - name: Check installed burpsuite version
   block:
-    - name: Set burpsuite command based on edition
-      ansible.builtin.set_fact:
-        burpsuite_version_cmd: >
-          {{ "BurpSuitePro" if burpsuite_edition == "pro"
-             else "BurpSuiteCommunity" }}
-
     - name: Get installed burpsuite version
       ansible.builtin.command:
-        cmd: "{{ burpsuite_version_cmd }} --version"
+        cmd: "{{ burpsuite_launcher_command }} --version"
       ignore_errors: true
       changed_when: false
       failed_when: false

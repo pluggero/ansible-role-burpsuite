@@ -4,6 +4,9 @@
 {% if burpsuite_eula_accepted %}
   <entry key="eulapro" value="11"/>
   <entry key="eulacommunity" value="4"/>
+{% if burpsuite_build_category_id == 'desktop' %}
+  <entry key="burp.eula" value="13"/>
+{% endif %}
 {% endif %}
   <entry key="suite.feedbackReportingEnabled" value="{{ burpsuite_portswigger_analytics_enabled | string | lower }}"/>
   <entry key="discover.latestViewedDiscoverContentRevision" value="{{ burpsuite_latest_discover_content_revision }}"/>

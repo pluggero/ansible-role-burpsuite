@@ -4,7 +4,10 @@
     - name: Find existing burpsuite folder in {{ burpsuite_install_dir }}
       ansible.builtin.find:
         paths: "{{ burpsuite_install_dir }}"
-        patterns: "burpsuite-{{ burpsuite_edition }}*"
+        # Match both the legacy edition-named and merged "desktop"-named folder schemes.
+        patterns:
+          - "burpsuite-{{ burpsuite_edition }}*"
+          - "burpsuite-desktop*"
         file_type: directory
       register: burpsuite_install_folder
 
@@ -19,7 +22,7 @@
 
     - name: Remove burpsuite symlink
       ansible.builtin.file:
-        path: "/usr/local/bin/BurpSuite{{ 'Pro' if burpsuite_edition == 'pro' else 'Community' }}"
+        path: "/usr/local/bin/{{ burpsuite_launcher_command }}"
         state: absent
       become: true
 
@@ -28,3 +31,14 @@
         path: "/usr/local/share/applications/burpsuite-{{ burpsuite_edition }}.desktop"
         state: absent
       become: true
+      when: burpsuite_build_category_id != 'desktop'
+
+    - name: Remove burpsuite Pro-mode and Community-mode desktop files
+      ansible.builtin.file:
+        path: "/usr/local/share/applications/burpsuite-{{ item }}.desktop"
+        state: absent
+      loop:
+        - pro
+        - community
+      become: true
+      when: burpsuite_build_category_id == 'desktop'

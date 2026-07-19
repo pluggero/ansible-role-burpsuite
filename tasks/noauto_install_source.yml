@@ -33,7 +33,7 @@
 
         - name: Set installer script filename
           ansible.builtin.set_fact:
-            burpsuite_installer_script: "burpsuite_{{ burpsuite_edition }}_linux_v{{ burpsuite_version | regex_replace('\\.', '_') }}.sh"
+            burpsuite_installer_script: "burpsuite_{{ burpsuite_build_category_id }}_linux_v{{ burpsuite_version | regex_replace('\\.', '_') }}.sh"
 
         - name: Download burpsuite package
           ansible.builtin.get_url:
@@ -81,6 +81,18 @@
             loop_var: file
           become: true
 
+        # install4j only creates its /usr/local/bin symlink when programGroupDisabled is false.
+        - name: Create burpsuite launcher symlink
+          ansible.builtin.file:
+            src: "{{ burpsuite_install_path }}/BurpSuite"
+            dest: "/usr/local/bin/{{ burpsuite_launcher_command }}"
+            state: link
+            force: true
+            owner: root
+            group: root
+          become: true
+          when: burpsuite_build_category_id == 'desktop'
+
         - name: Create desktop file
           block:
             - name: Ensure desktop file directory exists
@@ -92,6 +104,7 @@
                 group: root
               become: true
 
+            # Legacy installers drop a predictable .desktop file; the role symlinks to it.
             - name: Create desktop file symlink
               ansible.builtin.file:
                 src: "{{ burpsuite_install_path }}/Burp Suite {{ 'Professional' if burpsuite_edition == 'pro' else 'Community Edition' }}.desktop"
@@ -102,3 +115,30 @@
                 owner: root
                 group: root
               become: true
+              when: burpsuite_build_category_id != 'desktop'
+
+            # Merged builds: install4j's own entry is disabled (programGroupDisabled), so the
+            # role creates both explicit Pro/Community entries itself.
+            - name: Create Pro-mode desktop file
+              ansible.builtin.template:
+                src: burpsuite.desktop.j2
+                dest: "/usr/local/share/applications/burpsuite-pro.desktop"
+                mode: "0755"
+                owner: root
+                group: root
+              become: true
+              vars:
+                burpsuite_desktop_product_mode: "pro"
+              when: burpsuite_build_category_id == 'desktop'
+
+            - name: Create Community-mode desktop file
+              ansible.builtin.template:
+                src: burpsuite.desktop.j2
+                dest: "/usr/local/share/applications/burpsuite-community.desktop"
+                mode: "0755"
+                owner: root
+                group: root
+              become: true
+              vars:
+                burpsuite_desktop_product_mode: "community"
+              when: burpsuite_build_category_id == 'desktop'
