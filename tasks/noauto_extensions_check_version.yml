@@ -1,6 +1,9 @@
 ---
-# Check the on-disk manifest for a single BApp extension against the configured
-# bapp_serial_version to determine whether it needs (re)installing.
+# Check the on-disk manifest for a single BApp extension. needs_install is true when the
+# extension is missing, its manifest is unreadable/corrupt, or burpsuite_bapp_extensions_force_install
+# is set. It does NOT compare against the configured bapp_serial_version: PortSwigger's BApp
+# download endpoint always serves the current latest release regardless of the serial requested
+# in the URL, so an exact-version match can never be reliably achieved.
 # Called twice from noauto_extensions_install_bapp.yml: once before install to decide
 # needs_install, and once after a fresh install to pick up the new entry_point.
 
@@ -49,7 +52,7 @@
         extension.name: {
           'installed_version': (burpsuite_serial_match[0] if (burpsuite_serial_match is not none and burpsuite_serial_match | length > 0) else 'not_installed'),
           'entry_point': (burpsuite_entry_match[0] if (burpsuite_entry_match is not none and burpsuite_entry_match | length > 0) else ''),
-          'needs_install': (burpsuite_serial_match is none or burpsuite_serial_match | length == 0 or burpsuite_serial_match[0] != (extension.bapp_serial_version | string) or burpsuite_bapp_extensions_force_install)
+          'needs_install': (burpsuite_serial_match is none or burpsuite_serial_match | length == 0 or burpsuite_bapp_extensions_force_install)
         }
       }) }}
   when: burpsuite_extension_folder_stat.stat.exists and burpsuite_manifest_content.content is defined

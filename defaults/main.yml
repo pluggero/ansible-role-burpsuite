@@ -38,8 +38,8 @@ burpsuite_extension_runtimes:
     download_url: "{{ burpsuite_extension_runtime_jruby_url }}"
     download_checksum: "sha256:{{ burpsuite_extension_runtime_jruby_checksum_url }}"
 
-# Set to true to force-reinstall every BApp extension on each run, regardless of whether the
-# installed SerialVersion already matches bapp_serial_version.
+# Set to true to force-reinstall every already-installed BApp extension on each run. This is the
+# only way to refresh an installed extension to whatever PortSwigger currently serves as latest.
 burpsuite_bapp_extensions_force_install: false
 
 # BApp Store Extensions
@@ -52,6 +52,12 @@ burpsuite_bapp_extensions_force_install: false
 #   - pro: Both burpsuite_extensions_bapp_community and burpsuite_extensions_bapp_pro extensions are installed
 #
 # Note: Extensions cannot have duplicate bapp_uuid values across community and pro lists.
+#
+# Note on bapp_serial_version: PortSwigger's BApp download endpoint always serves the current
+# latest release of an extension regardless of the serial requested, so this value cannot pin an
+# exact version — it's only used to build the download URL and is recorded in Burp's own
+# UserConfig.json. It does not trigger reinstallation of an already-installed extension; use
+# burpsuite_bapp_extensions_force_install for that.
 #
 # Extension Priority:
 # - Extensions can have an optional 'priority' field (integer) to control load order
