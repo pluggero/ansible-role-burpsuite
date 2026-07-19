@@ -38,6 +38,8 @@ burpsuite_extension_runtimes:
     download_url: "{{ burpsuite_extension_runtime_jruby_url }}"
     download_checksum: "sha256:{{ burpsuite_extension_runtime_jruby_checksum_url }}"
 
+# Set to true to force-reinstall every BApp extension on each run, regardless of whether the
+# installed SerialVersion already matches bapp_serial_version.
 burpsuite_bapp_extensions_force_install: false
 
 # BApp Store Extensions

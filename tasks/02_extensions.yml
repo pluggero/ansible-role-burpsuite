@@ -36,130 +36,17 @@
         loop_var: extension
       become: true
 
-    - name: Initialize job tracking variables
+    - name: Initialize extension processing facts
       ansible.builtin.set_fact:
         burpsuite_processed_bapp_extensions: []
-        burpsuite_bapp_download_jobs: {}
-        burpsuite_bapp_job_extension_map: {}
         burpsuite_extension_versions: {}
 
-    # Phase 1: Batch check all extension versions in parallel
-    - name: Check installed versions for all extensions
+    - name: Ensure BApp extensions are installed
       ansible.builtin.include_tasks:
-        file: noauto_extensions_batch_check_versions.yml
+        file: noauto_extensions_install_bapp.yml
       loop: "{{ burpsuite_extensions_bapp }}"
       loop_control:
         loop_var: extension
-
-    # Phase 2: Parallel download of extensions that need installation
-    - name: Initiate parallel downloads for BApp extensions that need installation
-      ansible.builtin.include_tasks:
-        file: noauto_extensions_async_download.yml
-      loop: "{{ burpsuite_extensions_bapp }}"
-      loop_control:
-        loop_var: extension
-      when: burpsuite_extension_versions[extension.name].needs_install | default(true)
-
-    - name: Wait for all extension downloads to complete
-      ansible.builtin.async_status:
-        jid: "{{ job_id }}"
-      loop: "{{ burpsuite_bapp_download_jobs.values() | list }}"
-      loop_control:
-        loop_var: job_id
-      register: burpsuite_download_results
-      until: burpsuite_download_results.finished
-      retries: 120
-      delay: 5
-      when: burpsuite_bapp_download_jobs | length > 0
-      ignore_errors: true
-
-    - name: Retry failed extension downloads synchronously
-      ansible.builtin.get_url:
-        url: "https://portswigger.net/bappstore/bapps/download/{{ retry_ext.bapp_uuid }}/{{ retry_ext.bapp_serial_version }}"
-        dest: "/tmp/burpsuite_{{ retry_ext.bapp_uuid }}.bapp"
-        mode: '0644'
-        force: true
-      retries: 3
-      delay: 10
-      loop: >-
-        {{
-          burpsuite_download_results.results
-          | default([])
-          | selectattr('failed', 'defined')
-          | selectattr('failed')
-          | map(attribute='job_id')
-          | map('extract', burpsuite_bapp_job_extension_map)
-          | select('defined')
-          | map('extract', dict(
-              burpsuite_extensions_bapp | map(attribute='name')
-              | zip(burpsuite_extensions_bapp)
-            ))
-          | list
-        }}
-      loop_control:
-        loop_var: retry_ext
-      when: >-
-        burpsuite_download_results.results
-        | default([])
-        | selectattr('failed', 'defined')
-        | selectattr('failed')
-        | list
-        | length > 0
-
-    # Phase 3: Copy and directory creation (synchronous)
-    - name: Copy and setup directories for extensions
-      ansible.builtin.include_tasks:
-        file: noauto_extensions_install.yml
-      loop: "{{ burpsuite_extensions_bapp }}"
-      loop_control:
-        loop_var: extension
-      when: burpsuite_extension_versions[extension.name].needs_install | default(true)
-
-    # Phase 4: Extract archives (synchronous)
-    - name: Extract bapp archives
-      ansible.builtin.include_tasks:
-        file: noauto_extensions_extract.yml
-      loop: "{{ burpsuite_extensions_bapp }}"
-      loop_control:
-        loop_var: extension
-      when: burpsuite_extension_versions[extension.name].needs_install | default(true)
-
-    # Phase 5: Permission setting and cleanup (synchronous)
-    - name: Set permissions and cleanup for extensions
-      ansible.builtin.include_tasks:
-        file: noauto_extensions_finalize.yml
-      loop: "{{ burpsuite_extensions_bapp }}"
-      loop_control:
-        loop_var: extension
-      when: burpsuite_extension_versions[extension.name].needs_install | default(true)
-
-    # Phase 6: Re-read manifests for newly installed extensions to get entry_points
-    - name: Read manifest for newly installed extensions
-      ansible.builtin.include_tasks:
-        file: noauto_extensions_read_manifest.yml
-      loop: "{{ burpsuite_extensions_bapp }}"
-      loop_control:
-        loop_var: extension
-      when: burpsuite_extension_versions[extension.name].needs_install | default(true)
-
-    # Phase 7: Build processed extensions list with metadata
-    - name: Build processed extensions list
-      ansible.builtin.set_fact:
-        burpsuite_processed_bapp_extensions: >-
-          {% set base_ext = {
-            'name': item.name,
-            'bapp_uuid': item.bapp_uuid,
-            'bapp_serial_version': item.bapp_serial_version,
-            'type': item.type | default(''),
-            'use_ai': item.use_ai,
-            'loaded': item.loaded,
-            'entry_point': burpsuite_extension_versions[item.name].entry_point | default('')
-          } -%}
-          {{ (burpsuite_processed_bapp_extensions | default([])) +
-             [base_ext | combine({'priority': item.priority}) if item.priority is defined else base_ext] }}
-      loop: "{{ burpsuite_extensions_bapp }}"
-      loop_control:
-        loop_var: item
 
     - name: Ensure external extensions are installed
       ansible.builtin.get_url:
@@ -173,7 +60,6 @@
         loop_var: extension
       become: true
 
-    # Phase 8: Sort all extensions by priority for config generation
     - name: Sort extensions by priority
       ansible.builtin.include_tasks:
         file: noauto_extensions_sort_by_priority.yml
