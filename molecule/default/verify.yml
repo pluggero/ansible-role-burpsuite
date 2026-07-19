@@ -1,7 +1,22 @@
 ---
-- name: Verify a pre-existing BApp extension is left untouched
+- name: Verify BApp extension and burpsuite install behavior
   hosts: all
+
+  vars_files:
+    - ../../defaults/main.yml
+
   tasks:
+    - name: Check installed burpsuite version
+      ansible.builtin.include_role:
+        name: pluggero.burpsuite
+        tasks_from: noauto_check_installed_version
+
+    - name: Assert burpsuite was installed at the configured version
+      ansible.builtin.assert:
+        that:
+          - "burpsuite_installed_version == burpsuite_version"
+        fail_msg: "Installed burpsuite version ({{ burpsuite_installed_version }}) does not match configured burpsuite_version ({{ burpsuite_version }})"
+
     - name: Read ParamMiner manifest
       ansible.builtin.slurp:
         src: "{{ ansible_env.HOME }}/.BurpSuite/bapps/17d2949a985c4b7ca092728dba871943/BappManifest.bmf"
