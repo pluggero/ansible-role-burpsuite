@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Name=Burp Suite ({{ 'Professional' if burpsuite_desktop_product_mode == 'pro' else 'Community' }})
+Exec="{{ burpsuite_install_path }}/BurpSuite" --product-mode={{ burpsuite_desktop_product_mode }} %U
+MimeType=application/x-extension-burp;x-scheme-handler/burp;
+Icon={{ burpsuite_install_path }}/.install4j/BurpSuite.png
+Categories=Application;
+StartupWMClass=install4j-burp-StartBurp

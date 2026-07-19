@@ -2,5 +2,5 @@
 sys.adminRights$Boolean=false
 sys.installationDir={{ burpsuite_install_path }}
 sys.languageId=en
-sys.programGroupDisabled$Boolean=false
+sys.programGroupDisabled$Boolean={{ 'true' if burpsuite_build_category_id == 'desktop' else 'false' }}
 sys.symlinkDir=/usr/local/bin

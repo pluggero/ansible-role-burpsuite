@@ -9,7 +9,7 @@
 #
 # Required variables (set by caller):
 #   - burpsuite_version: Target version to find
-#   - burpsuite_edition: Product edition (e.g., 'pro', 'community')
+#   - burpsuite_build_category_id: BuildCategoryId to match (see defaults/main.yml)
 #   - burpsuite_release_channel: Release channel (e.g., 'Stable', 'EarlyAdopter')
 #
 # Internal state variables (initialized on first call, maintained through recursion):
@@ -50,7 +50,7 @@
 
     - name: Debug pagination and versions
       ansible.builtin.debug:
-        msg: "Page IDs: {{ burpsuite_api_data.ResultSet.Results | map(attribute='id') | list }} | Versions: {{ burpsuite_api_data.ResultSet.Results | selectattr('releaseChannels', 'contains', burpsuite_release_channel) | map(attribute='builds') | flatten | selectattr('BuildCategoryId', 'equalto', burpsuite_edition) | selectattr('BuildCategoryPlatform', 'equalto', 'Linux') | map(attribute='Version') | unique | list }}"
+        msg: "Page IDs: {{ burpsuite_api_data.ResultSet.Results | map(attribute='id') | list }} | Versions: {{ burpsuite_api_data.ResultSet.Results | selectattr('releaseChannels', 'contains', burpsuite_release_channel) | map(attribute='builds') | flatten | selectattr('BuildCategoryId', 'equalto', burpsuite_build_category_id) | selectattr('BuildCategoryPlatform', 'equalto', 'Linux') | map(attribute='Version') | unique | list }}"
 
     - name: Search current page for target release
       ansible.builtin.set_fact:
@@ -60,7 +60,7 @@
             | selectattr('releaseChannels', 'contains', burpsuite_release_channel)
             | map(attribute='builds')
             | flatten
-            | selectattr('BuildCategoryId', 'equalto', burpsuite_edition)
+            | selectattr('BuildCategoryId', 'equalto', burpsuite_build_category_id)
             | selectattr('Version', 'equalto', burpsuite_version)
             | selectattr('BuildCategoryPlatform', 'equalto', 'Linux')
             | list
@@ -82,7 +82,7 @@
         - name: Fail if version not found and no more pages
           ansible.builtin.fail:
             msg: >-
-              Version {{ burpsuite_version }} (edition={{ burpsuite_edition }},
+              Version {{ burpsuite_version }} (BuildCategoryId={{ burpsuite_build_category_id }},
               channel={{ burpsuite_release_channel }}, platform=Linux) not found
               in PortSwigger releases API after checking all available pages.
           when: not burpsuite_api_has_more

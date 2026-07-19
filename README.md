@@ -25,6 +25,14 @@ burpsuite_edition: "community"
 The edition of burpsuite to install can be defined in the variable `burpsuite_edition`.
 It can be either `community` or `pro`.
 
+Since version 2026.4, PortSwigger ships Community and Pro as a single merged binary. For
+`burpsuite_version >= 2026.4`, the role always creates two desktop entries —
+`Burp Suite (Professional)` and `Burp Suite (Community)` — that launch the respective mode
+explicitly (`BurpSuite --product-mode=pro` / `--product-mode=community`), regardless of
+`burpsuite_edition` or which license is active. `burpsuite_edition` still controls which BApp
+lists and `UserConfig*.json` are installed. Older, pre-merge versions keep a single
+edition-named desktop entry as before.
+
 ```yaml
 burpsuite_release_channel: "Stable"
 ```

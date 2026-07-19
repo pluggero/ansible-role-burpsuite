@@ -2,16 +2,22 @@
 burpsuite_config_dir: "{{ ansible_env.HOME }}/.BurpSuite"
 
 burpsuite_version: "2026.2.4"
+# Still drives BApp lists and UserConfig naming; desktop-entry/launcher selection uses
+# burpsuite_build_category_id instead.
 burpsuite_edition: "community"
+# PortSwigger merged Community/Pro into a single "desktop" build from version 2026.4 onward.
+burpsuite_build_category_id: "{{ 'desktop' if burpsuite_version is version('2026.4', '>=') else burpsuite_edition }}"
+# Merged builds ship one launcher binary ("BurpSuite") regardless of edition.
+burpsuite_launcher_command: "{{ 'BurpSuite' if burpsuite_build_category_id == 'desktop' else ('BurpSuitePro' if burpsuite_edition == 'pro' else 'BurpSuiteCommunity') }}"
 burpsuite_release_channel: "Stable"
 burpsuite_install_method: "source"
 burpsuite_force_install: false
 
-burpsuite_download_url: "https://portswigger.net/burp/releases/download?product={{ burpsuite_edition }}&type=linux&version={{ burpsuite_version }}"
+burpsuite_download_url: "https://portswigger.net/burp/releases/download?product={{ burpsuite_build_category_id }}&type=linux&version={{ burpsuite_version }}"
 burpsuite_download_dir: "/tmp"
 
 burpsuite_install_dir: "/opt"
-burpsuite_install_path: "{{ burpsuite_install_dir }}/burpsuite-{{ burpsuite_edition }}-{{ burpsuite_version }}"
+burpsuite_install_path: "{{ burpsuite_install_dir }}/burpsuite-{{ burpsuite_build_category_id }}-{{ burpsuite_version }}"
 
 burpsuite_extensions_dir: "{{ burpsuite_config_dir }}/bapps"
 burpsuite_extension_runtimes_dir: "{{ burpsuite_extensions_dir }}/runtimes"
